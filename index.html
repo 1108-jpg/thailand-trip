@@ -3,97 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>泰國旅行助手</title>
+    <title>Thai Party Guide</title>
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     
     <style>
-        :root { --primary-color: #008080; --bg-color: #f8f9fa; --warm-accent: #ff5722; --ig-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
-        body { font-family: -apple-system, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 80px; }
-        .page { display: none; padding: 20px; }
+        :root { 
+            --bg-color: #0a0a0a; 
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --neon-green: #39ff14;
+            --neon-purple: #bc13fe;
+            --neon-pink: #ff007f;
+            --text-color: #ffffff;
+        }
+        
+        body { 
+            font-family: -apple-system, sans-serif; 
+            background: var(--bg-color); 
+            color: var(--text-color);
+            margin: 0; 
+            padding-bottom: 90px;
+            background-image: radial-gradient(circle at 50% 10%, #1a1a2e 0%, #0a0a0a 100%);
+        }
+
+        .page { display: none; padding: 20px; animation: fadeIn 0.4s ease; }
         .page.active { display: block; }
-        .card { background: white; padding: 18px; border-radius: 15px; margin: 12px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h1 { font-size: 26px; text-shadow: 0 0 10px var(--neon-purple); border-bottom: 2px solid var(--neon-purple); display: inline-block; margin-bottom: 20px; }
+        h3 { color: var(--neon-green); text-transform: uppercase; letter-spacing: 1px; font-size: 14px; }
+
+        .card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 18px; 
+            border-radius: 20px; 
+            margin: 15px 0; 
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* 派對輸入框樣式 */
+        input, select { 
+            width: 100%; padding: 12px; margin: 10px 0; 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid var(--neon-purple); 
+            border-radius: 10px; 
+            color: white; font-size: 14px;
+        }
         
-        /* 表單樣式 */
-        input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
-        .add-btn { background: var(--primary-color); color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 10px; }
-        
-        /* 清單樣式 */
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .list-item:last-child { border-bottom: none; }
-        .ig-link { background: var(--ig-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 12px; font-weight: bold; text-decoration: none; }
-        .delete-btn { color: #ccc; border: none; background: none; padding: 5px; font-size: 18px; }
+        .add-btn { 
+            background: linear-gradient(45deg, var(--neon-purple), var(--neon-pink)); 
+            color: white; border: none; width: 100%; padding: 15px; 
+            border-radius: 12px; font-weight: bold; margin-top: 10px;
+            box-shadow: 0 0 15px var(--neon-purple);
+        }
 
         /* 導覽列 */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 65px; background: white; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -2px 15px rgba(0,0,0,0.08); z-index: 100; }
-        .nav-item { border: none; background: none; color: #888; font-size: 12px; display: flex; flex-direction: column; align-items: center; }
-        .nav-item.active { color: var(--primary-color); font-weight: bold; }
+        .nav-bar { 
+            position: fixed; bottom: 0; width: 100%; height: 75px; 
+            background: rgba(0, 0, 0, 0.8); 
+            backdrop-filter: blur(20px);
+            display: flex; justify-content: space-around; align-items: center; 
+            border-top: 1px solid rgba(255,255,255,0.1);
+            z-index: 1000;
+        }
+        .nav-item { 
+            border: none; background: none; color: #666; 
+            font-size: 11px; display: flex; flex-direction: column; align-items: center; 
+        }
+        .nav-item.active { color: var(--neon-green); filter: drop-shadow(0 0 5px var(--neon-green)); }
+        .nav-item span { font-size: 24px; margin-bottom: 4px; }
+
+        /* 天氣樣式 */
+        .temp-val { font-size: 60px; font-weight: 900; color: var(--neon-green); text-shadow: 0 0 20px var(--neon-green); }
+        
+        /* 清單與連結樣式 */
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .ig-link { color: var(--neon-pink); font-size: 13px; font-weight: bold; text-decoration: none; text-shadow: 0 0 5px var(--neon-pink); }
+        .delete-btn { color: #555; border: none; background: none; font-size: 20px; }
     </style>
 </head>
 <body>
 
     <!-- 天氣頁面 -->
     <div id="weather" class="page active">
-        <h1>🇹🇭 曼谷天氣</h1>
-        <div id="current-info" class="card" style="text-align:center; background: linear-gradient(180deg, #e0f2f1, #fff);">載入中...</div>
-        <div class="card"><h3>📅 5天預報</h3><div id="forecast-list"></div></div>
+        <h1>BKK STATUS</h1>
+        <div id="current-info" class="card" style="text-align:center;">
+            <div class="temp-val">--°C</div>
+            <p>Loading City Vibes...</p>
+        </div>
+        <div class="card"><h3>Forecast</h3><div id="forecast-list"></div></div>
     </div>
 
     <!-- 行程頁面 -->
     <div id="itinerary" class="page">
-        <h1>🗓️ 行程安排</h1>
-        <div class="card"><strong>DAY 1:</strong> 抵達並入住。</div>
-        <div class="card"><strong>DAY 2:</strong> 大皇宮穿搭拍照。</div>
+        <h1>VIBE CHECK</h1>
+        <div class="card"><strong style="color:var(--neon-purple)">DAY 1:</strong> Landing & Chill</div>
+        <div class="card"><strong style="color:var(--neon-purple)">DAY 2:</strong> Temple vs Party</div>
+        <div class="card"><strong style="color:var(--neon-purple)">DAY 3:</strong> Market Madness</div>
     </div>
 
-    <!-- 清單與靈感頁面 (新功能) -->
+    <!-- 清單頁面 -->
     <div id="lists" class="page">
-        <h1>📍 清單與靈感</h1>
+        <h1>SAVED LIST</h1>
         <div class="card">
-            <h3>➕ 新增靈感</h3>
+            <h3>Add New Inspo</h3>
             <select id="list-type">
-                <option value="buy">🛍️ 想要買 (To Buy)</option>
-                <option value="go">🚩 想要去/做 (To Go/Do)</option>
+                <option value="buy">🛍️ To Buy</option>
+                <option value="go">🚩 To Go/Do</option>
             </select>
-            <input type="text" id="list-title" placeholder="名稱 (如：手標奶茶、鄭王廟)">
-            <input type="url" id="list-url" placeholder="貼上 IG Reels / Threads 連結 (選填)">
-            <button class="add-btn" onclick="addListItem()">加入清單</button>
+            <input type="text" id="list-title" placeholder="Item Name">
+            <input type="url" id="list-url" placeholder="IG / Threads Link">
+            <button class="add-btn" onclick="addListItem()">ADD TO LIST</button>
         </div>
-
-        <div class="card">
-            <h3>🛍️ 購物清單</h3>
-            <div id="buy-list">尚無紀錄</div>
-        </div>
-
-        <div class="card">
-            <h3>🚩 必去清單</h3>
-            <div id="go-list">尚無紀錄</div>
-        </div>
+        <div class="card"><h3>🛍️ Shopping</h3><div id="buy-list">Empty</div></div>
+        <div class="card"><h3>🚩 Destinations</h3><div id="go-list">Empty</div></div>
     </div>
 
-    <!-- 理財頁面 -->
+    <!-- 分帳頁面 -->
     <div id="finance" class="page">
-        <h1>💰 分帳紀錄</h1>
+        <h1>BILL SPLIT</h1>
         <div class="card">
-            <h3>➕ 新增支出</h3>
-            <input type="text" id="pay-desc" placeholder="項目">
-            <input type="number" id="pay-amount" placeholder="金額 (THB)">
+            <h3>Add Expense</h3>
+            <input type="text" id="pay-desc" placeholder="What for?">
+            <input type="number" id="pay-amount" placeholder="Amount (THB)">
             <select id="payer">
-                <option value="Ada">Ada 墊付</option>
-                <option value="Cindy">Cindy 墊付</option>
-                <option value="Ling">Ling 墊付</option>
+                <option value="Ada">Ada Paid</option>
+                <option value="Cindy">Cindy Paid</option>
+                <option value="Ling">Ling Paid</option>
             </select>
-            <button class="add-btn" onclick="addPayment()">記錄分帳</button>
+            <button class="add-btn" onclick="addPayment()">SPLIT IT</button>
         </div>
-        <div class="card"><div id="pay-records"></div></div>
+        <div class="card"><h3>📝 History (Per 1/3)</h3><div id="pay-records">No Records</div></div>
     </div>
 
     <nav class="nav-bar">
-        <button class="nav-item active" onclick="showPage('weather')"><span>🌤️</span>天氣</button>
-        <button class="nav-item" onclick="showPage('itinerary')"><span>🗓️</span>行程</button>
-        <button class="nav-item" onclick="showPage('lists')"><span>📌</span>清單</button>
-        <button class="nav-item" onclick="showPage('finance')"><span>💰</span>分帳</button>
+        <button class="nav-item active" onclick="showPage('weather')"><span>🌌</span>Weather</button>
+        <button class="nav-item" onclick="showPage('itinerary')"><span>🗓️</span>Vibe</button>
+        <button class="nav-item" onclick="showPage('lists')"><span>⚡</span>Inspo</button>
+        <button class="nav-item" onclick="showPage('finance')"><span>💎</span>Split</button>
     </nav>
 
     <script>
@@ -106,20 +157,35 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
             event.currentTarget.classList.add('active');
+            window.scrollTo(0,0);
         }
 
-        // 清單功能
         function addListItem() {
             const type = document.getElementById('list-type').value;
             const title = document.getElementById('list-title').value;
             const url = document.getElementById('list-url').value;
             if (!title) return;
-
             tripLists[type].push({ title, url, id: Date.now() });
             localStorage.setItem('trip_lists', JSON.stringify(tripLists));
             renderLists();
             document.getElementById('list-title').value = '';
             document.getElementById('list-url').value = '';
+        }
+
+        function renderLists() {
+            ['buy', 'go'].forEach(type => {
+                const el = document.getElementById(`${type}-list`);
+                if (tripLists[type].length === 0) { el.innerHTML = 'No Records'; return; }
+                el.innerHTML = tripLists[type].map(item => `
+                    <div class="list-item">
+                        <div>
+                            <span style="display:block; margin-bottom:4px;">${item.title}</span>
+                            ${item.url ? `<a href="${item.url}" target="_blank" class="ig-link">⚡ VIEW POST</a>` : ''}
+                        </div>
+                        <button class="delete-btn" onclick="deleteItem('${type}', ${item.id})">×</button>
+                    </div>
+                `).join('');
+            });
         }
 
         function deleteItem(type, id) {
@@ -128,29 +194,11 @@
             renderLists();
         }
 
-        function renderLists() {
-            ['buy', 'go'].forEach(type => {
-                const el = document.getElementById(`${type}-list`);
-                if (tripLists[type].length === 0) { el.innerHTML = '尚無紀錄'; return; }
-                el.innerHTML = tripLists[type].map(item => `
-                    <div class="list-item">
-                        <div>
-                            <span>${item.title}</span>
-                            ${item.url ? `<br><a href="${item.url}" target="_blank" class="ig-link">🔗 查看 IG/Threads</a>` : ''}
-                        </div>
-                        <button class="delete-btn" onclick="deleteItem('${type}', ${item.id})">×</button>
-                    </div>
-                `).join('');
-            });
-        }
-
-        // 分帳功能
         function addPayment() {
             const desc = document.getElementById('pay-desc').value;
             const amount = document.getElementById('pay-amount').value;
             const payer = document.getElementById('payer').value;
             if (!desc || !amount) return;
-
             payments.unshift({ desc, amount, payer, per: (amount/3).toFixed(1) });
             localStorage.setItem('trip_payments', JSON.stringify(payments));
             renderPayments();
@@ -160,28 +208,28 @@
 
         function renderPayments() {
             const el = document.getElementById('pay-records');
+            if (payments.length === 0) { el.innerHTML = 'No Records'; return; }
             el.innerHTML = payments.map(p => `
-                <div style="border-bottom:1px solid #eee; padding:10px 0;">
-                    <strong>${p.desc}</strong>: ${p.amount} THB (${p.payer}付)<br>
-                    <small style="color:#666">Ada/Cindy/Ling 每人: ${p.per} THB</small>
+                <div style="border-bottom:1px solid rgba(255,255,255,0.1); padding:12px 0;">
+                    <strong style="color:var(--neon-pink)">${p.desc}</strong>: ${p.amount} THB (${p.payer})<br>
+                    <small style="color:var(--neon-green)">Ada/Cindy/Ling each: ${p.per} THB</small>
                 </div>
             `).join('');
         }
 
-        // 天氣 API
         async function fetchWeather() {
             try {
-                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=Bangkok&appid=${apiKey}&units=metric&lang=zh_tw`);
+                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=Bangkok&appid=${apiKey}&units=metric&lang=en`);
                 const data = await res.json();
-                document.getElementById('current-info').innerHTML = `<h2 style="color:var(--warm-accent); margin:0;">${Math.round(data.main.temp)}°C</h2><p style="margin:5px 0;">${data.weather[0].description}</p>`;
+                document.getElementById('current-info').innerHTML = `<div class="temp-val">${Math.round(data.main.temp)}°C</div><p style="letter-spacing:2px;">${data.weather[0].description.toUpperCase()}</p>`;
                 
-                const fRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Bangkok&appid=${apiKey}&units=metric&lang=zh_tw`);
+                const fRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Bangkok&appid=${apiKey}&units=metric`);
                 const fData = await fRes.json();
                 document.getElementById('forecast-list').innerHTML = fData.list.filter(i => i.dt_txt.includes("12:00:00")).map(d => `
                     <div class="forecast-item">
-                        <span>${new Date(d.dt*1000).toLocaleDateString('zh-HK',{weekday:'short',day:'numeric'})}</span>
-                        <span>${d.weather[0].description}</span>
-                        <span style="font-weight:bold; color:var(--warm-accent)">${Math.round(d.main.temp)}°C</span>
+                        <span>${new Date(d.dt*1000).toLocaleDateString('en-US',{weekday:'short',day:'numeric'})}</span>
+                        <span style="color:var(--neon-purple)">${d.weather[0].main}</span>
+                        <span style="font-weight:bold; color:var(--neon-green)">${Math.round(d.main.temp)}°C</span>
                     </div>
                 `).join('');
             } catch(e) {}
