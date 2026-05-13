@@ -10,42 +10,75 @@
     
     <style>
         :root { --primary-color: #008080; --bg-color: #f8f9fa; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg-color); margin: 0; padding: 20px; color: #333; }
-        h1 { color: var(--primary-color); text-align: center; font-size: 24px; }
-        .section-title { font-weight: bold; margin-top: 20px; border-left: 4px solid var(--primary-color); padding-left: 10px; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 70px; }
+        
+        /* 頁面內容切換 */
+        .page { display: none; padding: 20px; }
+        .page.active { display: block; }
+        
         .card { background: white; padding: 15px; border-radius: 12px; margin: 10px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .outfit-tag { display: inline-block; background: #e0f2f1; color: #00695c; padding: 4px 10px; border-radius: 20px; font-size: 12px; margin-top: 5px; }
-        .day { font-weight: bold; color: #555; }
+        .section-title { font-weight: bold; border-left: 4px solid var(--primary-color); padding-left: 10px; margin: 15px 0; }
+
+        /* 底部導覽列 */
+        .nav-bar {
+            position: fixed; bottom: 0; width: 100%; height: 60px;
+            background: white; display: flex; justify-content: space-around;
+            align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-item { border: none; background: none; color: #888; font-size: 14px; cursor: pointer; }
+        .nav-item.active { color: var(--primary-color); font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>🇹🇭 Thailand Getaway</h1>
-
-    <div class="section-title">👗 個人風格與穿搭</div>
-    <div class="card">
-        <p><strong>色彩建議：</strong> 根據您的色系分析，泰國的陽光非常適合您的**暖色系**服飾。</p>
-        <p><strong>髮型提醒：</strong> 泰國天氣潮濕，建議搭配您偏好的**清爽髮型**。</p>
-        <span class="outfit-tag">推薦顏色：珊瑚色、明黃色、亞麻綠</span>
+    <!-- 第一頁：天氣與穿搭 -->
+    <div id="weather" class="page active">
+        <h1>☀️ 天氣與穿搭</h1>
+        <div class="card">
+            <p><strong>曼谷氣溫：</strong> 預計 28°C - 35°C</p>
+            <p><strong>造型建議：</strong> 基於您的色彩分析，推薦使用暖色系單品。</p>
+        </div>
     </div>
 
-    <div class="section-title">🗓️ 預計行程</div>
-    <div class="card">
-        <div class="day">DAY 1 - 曼谷抵達</div>
-        <p>入住酒店、考山路感受氛圍。</p>
-    </div>
-    <div class="card">
-        <div class="day">DAY 2 - 經典探索</div>
-        <p>大皇宮、鄭王廟（適合穿亮色衣服拍照）。</p>
+    <!-- 第二頁：詳細行程 -->
+    <div id="itinerary" class="page">
+        <h1>🗓️ 旅行行程</h1>
+        <div class="card">
+            <strong>DAY 1:</strong> 抵達曼谷並入住酒店。
+        </div>
+        <div class="card">
+            <strong>DAY 2:</strong> 探索大皇宮與鄭王廟。
+        </div>
     </div>
 
-    <div class="section-title">📊 旅行匯率小工具</div>
-    <div class="card">
-        <p>1 HKD ≈ 4.6 THB (參考值)</p>
-        <p><i>提醒：購物預算可參考您的理財收益進行分配。</i></p>
+    <!-- 第三頁：理財與筆記 -->
+    <div id="finance" class="page">
+        <h1>💰 理財筆記</h1>
+        <div class="card">
+            <p>目前匯率參考：1 HKD ≈ 4.6 THB。</p>
+            <p>小提示：投資收益（如現金寶）可用作旅行預算。</p>
+        </div>
     </div>
+
+    <!-- 底部切換選單 -->
+    <nav class="nav-bar">
+        <button class="nav-item active" onclick="showPage('weather')">天氣</button>
+        <button class="nav-item" onclick="showPage('itinerary')">行程</button>
+        <button class="nav-item" onclick="showPage('finance')">理財</button>
+    </nav>
 
     <script>
+        function showPage(pageId) {
+            // 隱藏所有頁面
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            // 取消導覽列所有高亮
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            // 顯示選擇的頁面與高亮
+            document.getElementById(pageId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
