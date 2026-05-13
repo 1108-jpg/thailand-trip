@@ -10,17 +10,18 @@
         import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // 這裡已經填入妳在 image_55f936.png 中的設定
-       const firebaseConfig = {
-    apiKey: "AIzaSyAGCx9d4q4dMdSMMAQBJbskdyjcpkit_EM",
-    authDomain: "thai-trip-b0715.firebaseapp.com",
-    // ⬇️ 加入下面這一行，這是妳截圖中提示的專屬網址
-    databaseURL: "https://thai-trip-b0715-default-rtdb.asia-southeast1.firebasedatabase.app", 
-    projectId: "thai-trip-b0715",
-    storageBucket: "thai-trip-b0715.firebasestorage.app",
-    messagingSenderId: "924311551991",
-    appId: "1:924311551991:web:22a06d3fdc67f5807278f2",
-    measurementId: "G-TVNF7C25G8"
-};
+      // 請確保這段在 <script type="module"> 標籤內
+        const firebaseConfig = {
+            apiKey: "AIzaSyAGCx9d4q4dMdSMMAQBJbskdyjcpkit_EM",
+            authDomain: "thai-trip-b0715.firebaseapp.com",
+            // 就是這行！我幫妳校對過網址了：
+            databaseURL: "https://thai-trip-b0715-default-rtdb.asia-southeast1.firebasedatabase.app", 
+            projectId: "thai-trip-b0715",
+            storageBucket: "thai-trip-b0715.firebasestorage.app",
+            messagingSenderId: "924311551991",
+            appId: "1:924311551991:web:22a06d3fdc67f5807278f2",
+            measurementId: "G-TVNF7C25G8"
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
