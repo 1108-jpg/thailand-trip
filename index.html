@@ -3,48 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>泰國旅行手冊</title>
+    <title>泰國旅行助手</title>
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <style>
-        :root { --primary-color: #008080; --bg-color: #f8f9fa; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 70px; }
+        :root { --primary-color: #008080; --bg-color: #f8f9fa; --warm-accent: #ff5722; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 80px; }
         .page { display: none; padding: 20px; }
         .page.active { display: block; }
-        .card { background: white; padding: 15px; border-radius: 12px; margin: 10px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .section-title { font-weight: bold; border-left: 4px solid var(--primary-color); padding-left: 10px; margin: 15px 0; }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 60px; background: white; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
+        .card { background: white; padding: 18px; border-radius: 15px; margin: 12px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        
+        /* 天氣樣式 */
+        .current-weather { text-align: center; padding: 25px 0; background: linear-gradient(180deg, #e0f2f1 0%, #f8f9fa 100%); border-radius: 20px; margin-bottom: 20px; }
+        .current-temp { font-size: 50px; font-weight: bold; color: var(--warm-accent); }
+        .forecast-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+
+        /* 分帳表單樣式 */
+        input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button.add-btn { background: var(--primary-color); color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; }
+        .record-item { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 14px; }
+        .split-info { color: #666; font-size: 12px; }
+
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 65px; background: white; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -2px 15px rgba(0,0,0,0.08); }
         .nav-item { border: none; background: none; color: #888; font-size: 14px; }
         .nav-item.active { color: var(--primary-color); font-weight: bold; }
-        #temp { font-size: 24px; font-weight: bold; color: #ff5722; }
     </style>
 </head>
 <body>
 
-    <!-- 第一頁：天氣與穿搭 -->
+    <!-- 第一頁：天氣 -->
     <div id="weather" class="page active">
-        <h1>☀️ 曼谷實時天氣</h1>
-        <div class="card">
-            <div id="weather-info">正在獲取天氣數據...</div>
-            <p><strong>造型建議：</strong> 基於您的色彩分析，今日適合選用**暖色系**單品，展現活力。</p>
-        </div>
+        <h1>🇹🇭 曼谷天氣助手</h1>
+        <div class="current-weather"><div id="current-info">載入中...</div></div>
+        <div class="card"><h3>📅 5 天預報</h3><div id="forecast-list"></div></div>
     </div>
 
-    <!-- 第二頁：詳細行程 -->
+    <!-- 第二頁：行程 -->
     <div id="itinerary" class="page">
-        <h1>🗓️ 旅行行程</h1>
+        <h1>🗓️ 行程安排</h1>
         <div class="card"><strong>DAY 1:</strong> 抵達曼谷並入住酒店。</div>
         <div class="card"><strong>DAY 2:</strong> 探索大皇宮與鄭王廟。</div>
     </div>
 
-    <!-- 第三頁：理財與筆記 -->
+    <!-- 第三頁：理財與分帳 -->
     <div id="finance" class="page">
-        <h1>💰 理財筆記</h1>
+        <h1>💰 理財與分帳</h1>
+        
+        <!-- 新增付款表單 -->
         <div class="card">
-            <p>目前匯率參考：1 HKD ≈ 4.6 THB。</p>
-            <p>小提示：旅行支出可根據您的**現金寶**等收益進行靈活分配。</p>
+            <h3>➕ 新增支出</h3>
+            <input type="text" id="item-desc" placeholder="支出項目 (如：午餐、車費)">
+            <input type="number" id="item-amount" placeholder="金額 (THB)">
+            <select id="payer">
+                <option value="Ada">Ada 墊付</option>
+                <option value="Cindy">Cindy 墊付</option>
+                <option value="Ling">Ling 墊付</option>
+            </select>
+            <button class="add-btn" onclick="addRecord()">記錄支出</button>
+        </div>
+
+        <div class="card">
+            <h3>📝 付款紀錄 (除以 3)</h3>
+            <div id="record-list">尚無紀錄</div>
+        </div>
+
+        <div class="card">
+            <p><strong>匯率參考：</strong> 1 HKD ≈ 4.6 THB</p>
         </div>
     </div>
 
@@ -55,7 +81,10 @@
     </nav>
 
     <script>
-        // 切換頁面邏輯
+        const apiKey = '60cc6ca7af6352b8d7a184999d857f16';
+        const city = 'Bangkok';
+        let records = JSON.parse(localStorage.getItem('trip_records')) || [];
+
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -63,24 +92,64 @@
             event.currentTarget.classList.add('active');
         }
 
-        // 獲取天氣數據
-        async function fetchWeather() {
-            const apiKey = '60cc6ca7af6352b8d7a184999d857f16'; // 請看下方的步驟獲取
-            const city = 'Bangkok';
-            try {
-                const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=zh_tw`);
-                const data = await response.json();
-                document.getElementById('weather-info').innerHTML = `
-                    <p id="temp">${Math.round(data.main.temp)}°C</p>
-                    <p>目前狀況：${data.weather[0].description}</p>
-                    <p>濕度：${data.main.humidity}%</p>
-                `;
-            } catch (error) {
-                document.getElementById('weather-info').innerText = '暫時無法獲取天氣';
-            }
+        // 分帳功能邏輯
+        function addRecord() {
+            const desc = document.getElementById('item-desc').value;
+            const amount = document.getElementById('item-amount').value;
+            const payer = document.getElementById('payer').value;
+
+            if (!desc || !amount) return alert("請輸入項目和金額");
+
+            const perPerson = (amount / 3).toFixed(2);
+            const newRecord = { desc, amount, payer, perPerson, time: new Date().toLocaleTimeString() };
+            
+            records.unshift(newRecord);
+            localStorage.setItem('trip_records', JSON.stringify(records));
+            renderRecords();
+
+            // 清空輸入框
+            document.getElementById('item-desc').value = '';
+            document.getElementById('item-amount').value = '';
         }
 
-        fetchWeather();
+        function renderRecords() {
+            const list = document.getElementById('record-list');
+            if (records.length === 0) {
+                list.innerHTML = '尚無紀錄';
+                return;
+            }
+            list.innerHTML = records.map(r => `
+                <div class="record-item">
+                    <strong>${r.desc}</strong>: ${r.amount} THB (由 ${r.payer} 墊付)
+                    <div class="split-info">每人應付: ${r.perPerson} THB</div>
+                </div>
+            `).join('');
+        }
+
+        async function fetchAllWeather() {
+            try {
+                const currentRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=zh_tw`);
+                const currentData = await currentRes.json();
+                document.getElementById('current-info').innerHTML = `
+                    <div class="current-temp">${Math.round(currentData.main.temp)}°C</div>
+                    <div>${currentData.weather[0].description}</div>
+                `;
+
+                const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=zh_tw`);
+                const forecastData = await forecastRes.json();
+                const dailyData = forecastData.list.filter(item => item.dt_txt.includes("12:00:00"));
+                document.getElementById('forecast-list').innerHTML = dailyData.map(day => `
+                    <div class="forecast-item">
+                        <span>${new Date(day.dt * 1000).toLocaleDateString('zh-HK', {weekday:'short', month:'numeric', day:'numeric'})}</span>
+                        <span>${day.weather[0].description}</span>
+                        <span style="font-weight:bold; color:var(--warm-accent)">${Math.round(day.main.temp)}°C</span>
+                    </div>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        fetchAllWeather();
+        renderRecords();
     </script>
 </body>
 </html>
