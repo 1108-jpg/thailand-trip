@@ -260,7 +260,7 @@
         <button class="nav-item" onclick="showPage('finance')"><span>💰</span>分帳</button>
     </nav>
 
-    <script type="module">
+   <script type="module">
         import { onValue, push, remove, ref } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // 監聽雲端資料庫更新 - 靈感筆記
@@ -275,16 +275,50 @@
             renderPayments(data);
         });
 
-        // 新增：刪除帳單的函數
+        // --- 全域函數 (方便按鈕 onclick 調用) ---
+
+        // 刪除帳單
         window.deletePayment = function(key) {
             if (confirm("確定要刪除這筆帳單嗎？")) {
                 remove(ref(window.db, `trip_payments/${key}`));
             }
         };
 
+        // 刪除靈感項目
+        window.deleteItem = function(type, key) {
+            if (confirm("要刪掉這個靈感嗎？")) {
+                remove(ref(window.db, `trip_lists/${type}/${key}`));
+            }
+        };
+
+        // 新增靈感
+        window.addListItem = function() {
+            const type = document.getElementById('list-type').value;
+            const title = document.getElementById('list-title').value;
+            const url = document.getElementById('list-url').value;
+            if (!title) return alert("請輸入內容喔！");
+            push(ref(window.db, `trip_lists/${type}`), { title, url });
+            document.getElementById('list-title').value = '';
+            document.getElementById('list-url').value = '';
+        };
+
+        // 新增帳單
+        window.addPayment = function() {
+            const desc = document.getElementById('pay-desc').value;
+            const amount = parseFloat(document.getElementById('pay-amount').value);
+            const payer = document.getElementById('payer').value;
+            if (!desc || !amount) return alert("請填寫金額和說明！");
+            const per = Math.round(amount / 3);
+            push(window.dbRefs.payments, { desc, amount, payer, per });
+            document.getElementById('pay-desc').value = '';
+            document.getElementById('pay-amount').value = '';
+        };
+
+        // --- 渲染函數 ---
+
         function renderPayments(data) {
             const el = document.getElementById('pay-records');
-            const keys = Object.keys(data).reverse(); // 讓最新的帳單顯示在最上面
+            const keys = Object.keys(data).reverse(); // 新的在上面
             
             if (keys.length === 0) {
                 el.innerHTML = '<div style="text-align:center; opacity:0.5; padding:20px;">目前還沒有帳單喔 🍹</div>';
@@ -294,7 +328,7 @@
             el.innerHTML = keys.map(key => {
                 const p = data[key];
                 return `
-                    <div style="padding:15px 0; border-bottom:2px dashed #eee; position:relative;">
+                    <div style="padding:15px 0; border-bottom:2px dashed #eee;">
                         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                             <div>
                                 <span style="font-weight:900; font-size:16px;">🍭 ${p.desc}</span>
@@ -304,7 +338,7 @@
                             </div>
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <span style="color:var(--coral); font-weight:900; font-size:18px;">${p.amount}฿</span>
-                                <button class="delete-btn" onclick="deletePayment('${key}')" style="font-size:18px; padding:5px;">🗑️</button>
+                                <button class="delete-btn" onclick="deletePayment('${key}')">🗑️</button>
                             </div>
                         </div>
                     </div>`;
@@ -312,26 +346,37 @@
         }
 
         function renderLists(data) {
-            const configs = { buy: { el: 'buy-list-container', t: '🛍️ 購物清單' }, go: { el: 'go-list-container', t: '📍 探索目標' } };
+            const configs = { 
+                buy: { el: 'buy-list-container', t: '🛍️ 購物清單' }, 
+                go: { el: 'go-list-container', t: '📍 探索目標' } 
+            };
             for (let k in configs) {
                 const listObj = data[k] || {};
                 const keys = Object.keys(listObj);
-                document.getElementById(configs[k].el).innerHTML = keys.length === 0 ? '' : `
-                    <div class="card"><h3>${configs[k].t}</h3>${keys.map(key => {
-                        const i = listObj[key];
-                        return `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:2px dashed #eee;"><div><b>${i.title}</b><br>${i.url ? `<a href="${i.url}" target="_blank" style="background:var(--pink); border:2px solid #000; padding:2px 8px; border-radius:20px; font-size:10px; text-decoration:none; color:#000; font-weight:900;">LOOK!</a>` : ''}</div><button class="delete-btn" onclick="deleteItem('${k}', '${key}')">❌</button></div>`;
-                    }).join('')}</div>
+                const container = document.getElementById(configs[k].el);
+                
+                if (keys.length === 0) {
+                    container.innerHTML = '';
+                    continue;
+                }
+
+                container.innerHTML = `
+                    <div class="card">
+                        <h3>${configs[k].t}</h3>
+                        ${keys.map(key => {
+                            const i = listObj[key];
+                            return `
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:2px dashed #eee;">
+                                    <div>
+                                        <b>${i.title}</b><br>
+                                        ${i.url ? `<a href="${i.url}" target="_blank" style="background:var(--pink); border:2px solid #000; padding:2px 8px; border-radius:20px; font-size:10px; text-decoration:none; color:#000; font-weight:900;">LOOK!</a>` : ''}
+                                    </div>
+                                    <button class="delete-btn" onclick="deleteItem('${k}', '${key}')">🗑️</button>
+                                </div>`;
+                        }).join('')}
+                    </div>
                 `;
             }
-        }
-
-        function renderPayments(data) {
-            const el = document.getElementById('pay-records');
-            const keys = Object.keys(data).reverse(); // 新的在上面
-            el.innerHTML = keys.map(key => {
-                const p = data[key];
-                return `<div style="padding:10px 0; border-bottom:2px dashed #eee;"><div style="display:flex; justify-content:space-between;"><span style="font-weight:900;">🍭 ${p.desc}</span><span style="color:var(--coral); font-weight:900;">${p.amount}฿</span></div><div style="font-size:12px; font-weight:700; opacity:0.7;">${p.payer} 買單 ➔ 每人 ${p.per}฿</div></div>`;
-            }).join('');
         }
     </script>
 
