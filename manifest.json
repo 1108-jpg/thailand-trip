@@ -1,0 +1,16 @@
+{
+  "name": "Thailand Trip Guide",
+  "short_name": "ThaiTrip",
+  "description": "我的泰國旅行行程與穿搭助手",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#008080",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/530/530593.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
