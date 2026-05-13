@@ -4,6 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gowns & Greenery🌸🌿</title>
+    <!-- Firebase SDK (使用 CDN 版本以確保跨裝置兼容) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // 這裡已經填入妳在 image_55f936.png 中的設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyAGCx9d4q4dMdSMMAQBJbskdyjcpkit_EM",
+            authDomain: "thai-trip-b0715.firebaseapp.com",
+            projectId: "thai-trip-b0715",
+            storageBucket: "thai-trip-b0715.firebasestorage.app",
+            messagingSenderId: "924311551991",
+            appId: "1:924311551991:web:22a06d3fdc67f5807278f2",
+            measurementId: "G-TVNF7C25G8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // 將資料庫掛載到 window，方便下方的傳統 JavaScript 函數調用
+        window.db = db;
+        window.dbRefs = {
+            lists: ref(db, 'trip_lists'),
+            payments: ref(db, 'trip_payments')
+        };
+    </script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@700;900&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
 
@@ -139,7 +166,6 @@
     <div id="flights" class="page">
         <h1>✈️ 登機證</h1>
         
-        <!-- Ada 的票 -->
         <div class="card">
             <div class="sticker-label" style="background: var(--pink);">PASSENGER: ADA</div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
@@ -152,7 +178,6 @@
             </div>
         </div>
 
-        <!-- 妳和 Ling 的票 -->
         <div class="card">
             <div class="sticker-label" style="background: var(--blue); color: white;">PASSENGERS: Cindy & LING</div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
@@ -174,16 +199,16 @@
     <!-- 行程頁面 -->
     <div id="itinerary" class="page">
         <h1>🎒 行程 (7/1 - 7/5)</h1>
-        <div class="card"><div class="sticker-label">JULY 01</div><div style="font-weight:900;">🥂 抵達曼谷機場集合！</div></div>
-        <div class="card"><div class="sticker-label" style="background:var(--pink)">JULY 02</div><div style="font-weight:900;">🛕 大皇宮 & 網美咖啡廳</div></div>
-        <div class="card"><div class="sticker-label" style="background:var(--green)">JULY 03</div><div style="font-weight:900;">🛍️ 暹羅商圈血拼</div></div>
-        <div class="card"><div class="sticker-label" style="background:var(--green)">JULY 04</div><div style="font-weight:900;">🛍️ abc</div></div>
-        <div class="card"><div class="sticker-label" style="background:var(--blue); color:white;">JULY 05</div><div style="font-weight:900;">👋 回家囉 (依依不捨)</div></div>
+        <div class="card"><div class="sticker-label">JULY 01</div><div style="font-weight:900;">🥂 抵達集合！華服派對夜 🍸</div></div>
+        <div class="card"><div class="sticker-label" style="background:var(--pink)">JULY 02</div><div style="font-weight:900;">🍴 Fine Dining & 網美打卡</div></div>
+        <div class="card"><div class="sticker-label" style="background:var(--green)">JULY 03</div><div style="font-weight:900;">🌿 綠色體驗 & 暹羅血拼 🛍️</div></div>
+        <div class="card"><div class="sticker-label" style="background:var(--green)">JULY 04</div><div style="font-weight:900;">💃 Clubbing All Night 舞池女王</div></div>
+        <div class="card"><div class="sticker-label" style="background:var(--blue); color:white;">JULY 05</div><div style="font-weight:900;">👋 依依不捨回家囉</div></div>
     </div>
 
-    <!-- 清單與分帳保留原邏輯但樣式統一 -->
+    <!-- 靈感頁面 -->
     <div id="lists" class="page">
-        <h1>👀 靈感筆記</h1>
+        <h1>👀 靈感筆記 (即時同步)</h1>
         <div class="card">
             <div class="sticker-label" style="background:var(--blue)">NEW IDEA</div>
             <select id="list-type">
@@ -198,20 +223,21 @@
         <div id="go-list-container"></div>
     </div>
 
+    <!-- 分帳頁面 -->
     <div id="finance" class="page">
-        <h1>💸 分帳本</h1>
+        <h1>💸 即時分帳本</h1>
         <div class="card">
             <div class="sticker-label" style="background:var(--coral); color:white;">PAYMENT</div>
-            <input type="text" id="pay-desc" placeholder="吃了什麼？">
+            <input type="text" id="pay-desc" placeholder="例如：米其林晚餐 🍴">
             <input type="number" id="pay-amount" placeholder="多少泰銖？">
             <select id="payer">
                 <option value="Ada">🥰 Ada 付的</option>
                 <option value="Cindy">🤪 Cindy 付的</option>
                 <option value="Ling">😇 Ling 付的</option>
             </select>
-            <button class="add-btn" style="background:var(--yellow)" onclick="addPayment()">計算分帳 💰</button>
+            <button class="add-btn" style="background:var(--yellow)" onclick="addPayment()">計算並同步 💰</button>
         </div>
-        <div class="card"><h3>📑 小帳本</h3><div id="pay-records"></div></div>
+        <div class="card"><h3>📑 共同小帳本</h3><div id="pay-records"></div></div>
     </div>
 
     <nav class="nav-bar">
@@ -222,10 +248,75 @@
         <button class="nav-item" onclick="showPage('finance')"><span>💰</span>分帳</button>
     </nav>
 
+    <script type="module">
+        import { onValue, push, remove, ref } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // 監聽雲端資料庫更新 - 靈感筆記
+        onValue(window.dbRefs.lists, (snapshot) => {
+            const data = snapshot.val() || { buy: {}, go: {} };
+            renderLists(data);
+        });
+
+        // 監聽雲端資料庫更新 - 分帳
+        onValue(window.dbRefs.payments, (snapshot) => {
+            const data = snapshot.val() || {};
+            renderPayments(data);
+        });
+
+        // 重新定義原本的函數以支援 Firebase
+        window.addListItem = function() {
+            const title = document.getElementById('list-title').value;
+            const type = document.getElementById('list-type').value;
+            const url = document.getElementById('list-url').value;
+            if (!title) return;
+
+            push(ref(window.db, `trip_lists/${type}`), { title, url, timestamp: Date.now() });
+            document.getElementById('list-title').value = '';
+            document.getElementById('list-url').value = '';
+        };
+
+        window.deleteItem = function(type, key) {
+            remove(ref(window.db, `trip_lists/${type}/${key}`));
+        };
+
+        window.addPayment = function() {
+            const desc = document.getElementById('pay-desc').value;
+            const amount = document.getElementById('pay-amount').value;
+            const payer = document.getElementById('payer').value;
+            if (!desc || !amount) return;
+
+            push(window.dbRefs.payments, { desc, amount, payer, per: (amount/3).toFixed(0), timestamp: Date.now() });
+            document.getElementById('pay-desc').value = '';
+            document.getElementById('pay-amount').value = '';
+        };
+
+        function renderLists(data) {
+            const configs = { buy: { el: 'buy-list-container', t: '🛍️ 購物清單' }, go: { el: 'go-list-container', t: '📍 探索目標' } };
+            for (let k in configs) {
+                const listObj = data[k] || {};
+                const keys = Object.keys(listObj);
+                document.getElementById(configs[k].el).innerHTML = keys.length === 0 ? '' : `
+                    <div class="card"><h3>${configs[k].t}</h3>${keys.map(key => {
+                        const i = listObj[key];
+                        return `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:2px dashed #eee;"><div><b>${i.title}</b><br>${i.url ? `<a href="${i.url}" target="_blank" style="background:var(--pink); border:2px solid #000; padding:2px 8px; border-radius:20px; font-size:10px; text-decoration:none; color:#000; font-weight:900;">LOOK!</a>` : ''}</div><button class="delete-btn" onclick="deleteItem('${k}', '${key}')">❌</button></div>`;
+                    }).join('')}</div>
+                `;
+            }
+        }
+
+        function renderPayments(data) {
+            const el = document.getElementById('pay-records');
+            const keys = Object.keys(data).reverse(); // 新的在上面
+            el.innerHTML = keys.map(key => {
+                const p = data[key];
+                return `<div style="padding:10px 0; border-bottom:2px dashed #eee;"><div style="display:flex; justify-content:space-between;"><span style="font-weight:900;">🍭 ${p.desc}</span><span style="color:var(--coral); font-weight:900;">${p.amount}฿</span></div><div style="font-size:12px; font-weight:700; opacity:0.7;">${p.payer} 買單 ➔ 每人 ${p.per}฿</div></div>`;
+            }).join('');
+        }
+    </script>
+
     <script>
+        // 非 Firebase 邏輯的傳統腳本 (天氣, 導航等)
         const apiKey = '60cc6ca7af6352b8d7a184999d857f16';
-        let tripLists = JSON.parse(localStorage.getItem('trip_lists')) || { buy: [], go: [] };
-        let payments = JSON.parse(localStorage.getItem('trip_payments')) || [];
 
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -245,49 +336,6 @@
             document.getElementById('countdown').innerHTML = `${days} 天 ${hours} 小時`;
         }
 
-        function addListItem() {
-            const title = document.getElementById('list-title').value;
-            if (!title) return;
-            const type = document.getElementById('list-type').value;
-            tripLists[type].push({ title, url: document.getElementById('list-url').value, id: Date.now() });
-            localStorage.setItem('trip_lists', JSON.stringify(tripLists));
-            renderLists();
-            document.getElementById('list-title').value = '';
-            document.getElementById('list-url').value = '';
-        }
-
-        function renderLists() {
-            const configs = { buy: { el: 'buy-list-container', t: '🛍️ 購物清單' }, go: { el: 'go-list-container', t: '📍 探索目標' } };
-            for (let k in configs) {
-                const list = tripLists[k];
-                document.getElementById(configs[k].el).innerHTML = list.length === 0 ? '' : `
-                    <div class="card"><h3>${configs[k].t}</h3>${list.map(i => `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:2px dashed #eee;"><div><b>${i.title}</b><br>${i.url ? `<a href="${i.url}" target="_blank" style="background:var(--pink); border:2px solid #000; padding:2px 8px; border-radius:20px; font-size:10px; text-decoration:none; color:#000; font-weight:900;">LOOK!</a>` : ''}</div><button class="delete-btn" onclick="deleteItem('${k}', ${i.id})">❌</button></div>`).join('')}</div>
-                `;
-            }
-        }
-
-        function deleteItem(type, id) {
-            tripLists[type] = tripLists[type].filter(i => i.id !== id);
-            localStorage.setItem('trip_lists', JSON.stringify(tripLists));
-            renderLists();
-        }
-
-        function addPayment() {
-            const desc = document.getElementById('pay-desc').value;
-            const amount = document.getElementById('pay-amount').value;
-            if (!desc || !amount) return;
-            payments.unshift({ desc, amount, payer: document.getElementById('payer').value, per: (amount/3).toFixed(0) });
-            localStorage.setItem('trip_payments', JSON.stringify(payments));
-            renderPayments();
-            document.getElementById('pay-desc').value = '';
-            document.getElementById('pay-amount').value = '';
-        }
-
-        function renderPayments() {
-            const el = document.getElementById('pay-records');
-            el.innerHTML = payments.map(p => `<div style="padding:10px 0; border-bottom:2px dashed #eee;"><div style="display:flex; justify-content:space-between;"><span style="font-weight:900;">🍭 ${p.desc}</span><span style="color:var(--coral); font-weight:900;">${p.amount}฿</span></div><div style="font-size:12px; font-weight:700; opacity:0.7;">${p.payer} 買單 ➔ 每人 ${p.per}฿</div></div>`).join('');
-        }
-
         async function fetchWeather() {
             try {
                 const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=Bangkok&appid=${apiKey}&units=metric&lang=zh_tw`);
@@ -300,7 +348,7 @@
             } catch(e) {}
         }
 
-        fetchWeather(); renderLists(); renderPayments(); updateCountdown();
+        fetchWeather(); updateCountdown();
         setInterval(updateCountdown, 60000);
     </script>
 </body>
