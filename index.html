@@ -24,7 +24,6 @@
             color: var(--black);
             margin: 0; 
             padding-bottom: 120px;
-            /* 背景加上可愛的小點點裝飾 */
             background-image: radial-gradient(var(--pink) 1px, transparent 1px);
             background-size: 20px 20px;
             min-height: 100vh;
@@ -40,18 +39,16 @@
             margin-bottom: 20px; text-align: center;
         }
 
-        /* 貼紙感卡片設計 */
         .card { 
             background: var(--white); 
             border: 3px solid var(--black);
             border-radius: 20px;
             padding: 20px; 
             margin: 15px 0; 
-            box-shadow: 6px 6px 0px var(--black); /* 復古硬陰影 */
+            box-shadow: 6px 6px 0px var(--black);
             position: relative;
         }
 
-        /* 像圖中標籤的樣式 */
         .sticker-label {
             display: inline-block;
             background: var(--yellow);
@@ -64,17 +61,25 @@
             box-shadow: 2px 2px 0px var(--black);
         }
 
-        /* 輸入框樣式 */
-        input, select { 
-            width: 100%; padding: 12px; margin: 10px 0; 
-            background: #fff; 
-            border: 3px solid var(--black);
-            border-radius: 12px; 
-            font-family: inherit; font-weight: 700;
-            box-sizing: border-box;
+        .ticket-cutout {
+            border-top: 3px dashed var(--black);
+            margin-top: 15px;
+            padding-top: 15px;
+            position: relative;
         }
-        
-        /* 充滿活力的按鈕 */
+        .ticket-cutout::before, .ticket-cutout::after {
+            content: '';
+            position: absolute;
+            top: -12px;
+            width: 20px;
+            height: 20px;
+            background: var(--bg-purple);
+            border: 3px solid var(--black);
+            border-radius: 50%;
+        }
+        .ticket-cutout::before { left: -33px; }
+        .ticket-cutout::after { right: -33px; }
+
         .add-btn { 
             background: var(--green); 
             color: var(--black); border: 3px solid var(--black); 
@@ -82,11 +87,9 @@
             border-radius: 50px; font-weight: 900; font-size: 18px;
             box-shadow: 4px 4px 0px var(--black);
             cursor: pointer; transition: 0.1s;
-            margin-top: 10px;
         }
         .add-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--black); }
 
-        /* 導覽列：像一排貼紙 */
         .nav-bar { 
             position: fixed; bottom: 20px; left: 5%; width: 90%; height: 80px; 
             background: var(--white); 
@@ -98,24 +101,20 @@
         }
         .nav-item { 
             border: none; background: none; color: var(--black); 
-            font-size: 12px; font-weight: 900; display: flex; flex-direction: column; align-items: center; 
+            font-size: 10px; font-weight: 900; display: flex; flex-direction: column; align-items: center; 
         }
         .nav-item.active { color: var(--coral); transform: scale(1.1) rotate(-5deg); }
-        .nav-item span { font-size: 28px; filter: drop-shadow(2px 2px 0px #000); }
+        .nav-item span { font-size: 24px; margin-bottom: 4px; filter: drop-shadow(2px 2px 0px #000); }
 
-        /* 天氣大圖示 */
-        .big-icon { font-size: 60px; margin: 10px 0; filter: drop-shadow(4px 4px 0px var(--black)); }
-        .temp-val { font-size: 48px; font-weight: 900; -webkit-text-stroke: 1.5px var(--black); color: var(--yellow); }
-
-        /* 列表刪除鈕 */
         .delete-btn { font-size: 24px; border: none; background: none; cursor: pointer; }
 
-        .ig-link { 
-            display: inline-block; margin-top: 10px;
-            background: var(--pink); border: 2px solid var(--black);
-            color: var(--black); font-size: 12px; font-weight: 900; 
-            padding: 5px 15px; border-radius: 50px; text-decoration: none;
-            box-shadow: 2px 2px 0px var(--black);
+        input, select { 
+            width: 100%; padding: 12px; margin: 10px 0; 
+            background: #fff; 
+            border: 3px solid var(--black);
+            border-radius: 12px; 
+            font-family: inherit; font-weight: 700;
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -123,12 +122,12 @@
 
     <!-- 天氣頁面 -->
     <div id="weather" class="page active">
-        <h1>🌞 天氣預報</h1>
+        <h1>🌞 曼谷天氣</h1>
         <div id="current-info" class="card" style="text-align:center;">
-            <div class="sticker-label" style="background:var(--blue); color:white;">BANGKOK TODAY</div>
-            <div class="big-icon">🌼</div>
-            <div class="temp-val">--°C</div>
-            <div style="font-weight:900; margin-top:10px;">今天也是開心的一天！</div>
+            <div class="sticker-label" style="background:var(--blue); color:white;">BANGKOK VIBES</div>
+            <div id="weather-icon" style="font-size: 60px; margin: 10px 0;">🌈</div>
+            <div id="temp-display" style="font-size: 48px; font-weight: 900; color: var(--yellow);">--°C</div>
+            <div id="weather-desc" style="font-weight:900; margin-top:10px;">準備出發中...</div>
         </div>
         <div class="card">
             <h3>✨ 未來預報</h3>
@@ -136,25 +135,52 @@
         </div>
     </div>
 
-    <!-- 行程頁面 -->
-    <div id="itinerary" class="page">
-        <h1>🎒 冒險行程</h1>
+    <!-- 航班頁面 -->
+    <div id="flights" class="page">
+        <h1>✈️ 登機證</h1>
+        
+        <!-- Ada 的票 -->
         <div class="card">
-            <div class="sticker-label">DAY 01</div>
-            <div style="font-weight:900; font-size:18px;">🌈 抵達泰國 & 快樂晚餐</div>
-            <div style="font-size:14px; margin-top:5px; opacity:0.8;">準備開啟瘋狂模式！</div>
+            <div class="sticker-label" style="background: var(--pink);">PASSENGER: ADA</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
+                <div><div style="font-size: 10px; opacity: 0.6;">FROM</div><div style="font-size: 20px; font-weight: 900;">TPE</div></div>
+                <div style="font-size: 20px;">🌸</div>
+                <div style="text-align: right;"><div style="font-size: 10px; opacity: 0.6;">TO</div><div style="font-size: 20px; font-weight: 900;">BKK</div></div>
+            </div>
+            <div class="ticket-cutout">
+                <div style="font-size: 12px; font-weight: 900;">DATE: 01 JULY 2026</div>
+            </div>
         </div>
+
+        <!-- 妳和 Ling 的票 -->
         <div class="card">
-            <div class="sticker-label" style="background:var(--pink)">DAY 02</div>
-            <div style="font-weight:900; font-size:18px;">🛕 曼谷探險記</div>
+            <div class="sticker-label" style="background: var(--blue); color: white;">PASSENGERS: ME & LING</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
+                <div><div style="font-size: 10px; opacity: 0.6;">FROM</div><div style="font-size: 20px; font-weight: 900;">HKG</div></div>
+                <div style="font-size: 20px;">🥟</div>
+                <div style="text-align: right;"><div style="font-size: 10px; opacity: 0.6;">TO</div><div style="font-size: 20px; font-weight: 900;">BKK</div></div>
+            </div>
+            <div class="ticket-cutout">
+                <div style="font-size: 12px; font-weight: 900;">DATE: 01 JULY 2026</div>
+            </div>
         </div>
-        <div class="card">
-            <div class="sticker-label" style="background:var(--green)">DAY 03</div>
-            <div style="font-weight:900; font-size:18px;">🛒 市集大掃貨</div>
+
+        <div class="card" style="background: var(--yellow); text-align: center;">
+            <div style="font-size: 14px; font-weight: 900; margin-bottom: 5px;">距離 7/1 泰國大冒險還有</div>
+            <div id="countdown" style="font-size: 24px; font-weight: 900; text-shadow: 2px 2px 0 var(--white);">載入中...</div>
         </div>
     </div>
 
-    <!-- 清單頁面 -->
+    <!-- 行程頁面 -->
+    <div id="itinerary" class="page">
+        <h1>🎒 行程 (7/1 - 7/5)</h1>
+        <div class="card"><div class="sticker-label">JULY 01</div><div style="font-weight:900;">🥂 抵達曼谷機場集合！</div></div>
+        <div class="card"><div class="sticker-label" style="background:var(--pink)">JULY 02</div><div style="font-weight:900;">🛕 大皇宮 & 網美咖啡廳</div></div>
+        <div class="card"><div class="sticker-label" style="background:var(--green)">JULY 03</div><div style="font-weight:900;">🛍️ 暹羅商圈血拼</div></div>
+        <div class="card"><div class="sticker-label" style="background:var(--blue); color:white;">JULY 05</div><div style="font-weight:900;">👋 回家囉 (依依不捨)</div></div>
+    </div>
+
+    <!-- 清單與分帳保留原邏輯但樣式統一 -->
     <div id="lists" class="page">
         <h1>👀 靈感筆記</h1>
         <div class="card">
@@ -171,25 +197,25 @@
         <div id="go-list-container"></div>
     </div>
 
-    <!-- 分帳頁面 -->
     <div id="finance" class="page">
-        <h1>💸 誰付了錢</h1>
+        <h1>💸 分帳本</h1>
         <div class="card">
             <div class="sticker-label" style="background:var(--coral); color:white;">PAYMENT</div>
-            <input type="text" id="pay-desc" placeholder="吃了什麼好料？">
+            <input type="text" id="pay-desc" placeholder="吃了什麼？">
             <input type="number" id="pay-amount" placeholder="多少泰銖？">
             <select id="payer">
                 <option value="Ada">🥰 Ada 付的</option>
                 <option value="Cindy">🤪 Cindy 付的</option>
                 <option value="Ling">😇 Ling 付的</option>
             </select>
-            <button class="add-btn" style="background:var(--yellow)" onclick="addPayment()">算算每人多少 💰</button>
+            <button class="add-btn" style="background:var(--yellow)" onclick="addPayment()">計算分帳 💰</button>
         </div>
         <div class="card"><h3>📑 小帳本</h3><div id="pay-records"></div></div>
     </div>
 
     <nav class="nav-bar">
         <button class="nav-item active" onclick="showPage('weather')"><span>☀️</span>天氣</button>
+        <button class="nav-item" onclick="showPage('flights')"><span>✈️</span>航班</button>
         <button class="nav-item" onclick="showPage('itinerary')"><span>🗺️</span>行程</button>
         <button class="nav-item" onclick="showPage('lists')"><span>🎨</span>靈感</button>
         <button class="nav-item" onclick="showPage('finance')"><span>💰</span>分帳</button>
@@ -208,6 +234,16 @@
             window.scrollTo(0,0);
         }
 
+        function updateCountdown() {
+            const departureDate = new Date('2026-07-01T09:00:00');
+            const now = new Date();
+            const diff = departureDate - now;
+            if (diff <= 0) { document.getElementById('countdown').innerHTML = "冒險開始啦！🔥"; return; }
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            document.getElementById('countdown').innerHTML = `${days} 天 ${hours} 小時`;
+        }
+
         function addListItem() {
             const title = document.getElementById('list-title').value;
             if (!title) return;
@@ -224,15 +260,7 @@
             for (let k in configs) {
                 const list = tripLists[k];
                 document.getElementById(configs[k].el).innerHTML = list.length === 0 ? '' : `
-                    <div class="card">
-                        <h3>${configs[k].t}</h3>
-                        ${list.map(i => `
-                            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:2px dashed #eee;">
-                                <div><b>${i.title}</b><br>${i.url ? `<a href="${i.url}" target="_blank" class="ig-link">LOOK! 📸</a>` : ''}</div>
-                                <button class="delete-btn" onclick="deleteItem('${k}', ${i.id})">❌</button>
-                            </div>
-                        `).join('')}
-                    </div>
+                    <div class="card"><h3>${configs[k].t}</h3>${list.map(i => `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:2px dashed #eee;"><div><b>${i.title}</b><br>${i.url ? `<a href="${i.url}" target="_blank" style="background:var(--pink); border:2px solid #000; padding:2px 8px; border-radius:20px; font-size:10px; text-decoration:none; color:#000; font-weight:900;">LOOK!</a>` : ''}</div><button class="delete-btn" onclick="deleteItem('${k}', ${i.id})">❌</button></div>`).join('')}</div>
                 `;
             }
         }
@@ -256,39 +284,23 @@
 
         function renderPayments() {
             const el = document.getElementById('pay-records');
-            el.innerHTML = payments.map(p => `
-                <div style="padding:10px 0; border-bottom:2px dashed #eee;">
-                    <div style="display:flex; justify-content:space-between;">
-                        <span style="font-weight:900;">🍭 ${p.desc}</span>
-                        <span style="color:var(--coral); font-weight:900;">${p.amount}฿</span>
-                    </div>
-                    <div style="font-size:12px; font-weight:700; opacity:0.7;">${p.payer} 買單 ➔ 每人 ${p.per}฿</div>
-                </div>
-            `).join('');
+            el.innerHTML = payments.map(p => `<div style="padding:10px 0; border-bottom:2px dashed #eee;"><div style="display:flex; justify-content:space-between;"><span style="font-weight:900;">🍭 ${p.desc}</span><span style="color:var(--coral); font-weight:900;">${p.amount}฿</span></div><div style="font-size:12px; font-weight:700; opacity:0.7;">${p.payer} 買單 ➔ 每人 ${p.per}฿</div></div>`).join('');
         }
 
         async function fetchWeather() {
             try {
-                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=Bangkok&appid=${apiKey}&units=metric`);
+                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=Bangkok&appid=${apiKey}&units=metric&lang=zh_tw`);
                 const data = await res.json();
-                document.getElementById('current-info').innerHTML = `
-                    <div class="sticker-label" style="background:var(--blue); color:white;">BANGKOK TODAY</div>
-                    <div class="big-icon">😎</div>
-                    <div class="temp-val">${Math.round(data.main.temp)}°C</div>
-                    <div style="font-weight:900; margin-top:10px; text-transform:uppercase;">${data.weather[0].description}</div>
-                `;
+                document.getElementById('temp-display').innerHTML = `${Math.round(data.main.temp)}°C`;
+                document.getElementById('weather-desc').innerHTML = data.weather[0].description;
                 const fRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Bangkok&appid=${apiKey}&units=metric`);
                 const fData = await fRes.json();
-                document.getElementById('forecast-list').innerHTML = fData.list.filter(i => i.dt_txt.includes("12:00:00")).map(d => `
-                    <div style="display:flex; justify-content:space-between; padding:10px 0; font-weight:900;">
-                        <span>${new Date(d.dt*1000).toLocaleDateString('zh-HK',{weekday:'short'})}</span>
-                        <span style="color:var(--pink)">${Math.round(d.main.temp)}°C</span>
-                    </div>
-                `).join('');
+                document.getElementById('forecast-list').innerHTML = fData.list.filter(i => i.dt_txt.includes("12:00:00")).map(d => `<div style="display:flex; justify-content:space-between; padding:10px 0; font-weight:900;"><span>${new Date(d.dt*1000).toLocaleDateString('zh-HK',{weekday:'short'})}</span><span style="color:var(--pink)">${Math.round(d.main.temp)}°C</span></div>`).join('');
             } catch(e) {}
         }
 
-        fetchWeather(); renderLists(); renderPayments();
+        fetchWeather(); renderLists(); renderPayments(); updateCountdown();
+        setInterval(updateCountdown, 60000);
     </script>
 </body>
 </html>
