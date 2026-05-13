@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>泰國旅行手冊</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <style>
+        :root { --primary-color: #008080; --bg-color: #f8f9fa; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg-color); margin: 0; padding: 20px; color: #333; }
+        h1 { color: var(--primary-color); text-align: center; font-size: 24px; }
+        .section-title { font-weight: bold; margin-top: 20px; border-left: 4px solid var(--primary-color); padding-left: 10px; }
+        .card { background: white; padding: 15px; border-radius: 12px; margin: 10px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .outfit-tag { display: inline-block; background: #e0f2f1; color: #00695c; padding: 4px 10px; border-radius: 20px; font-size: 12px; margin-top: 5px; }
+        .day { font-weight: bold; color: #555; }
+    </style>
+</head>
+<body>
+
+    <h1>🇹🇭 Thailand Getaway</h1>
+
+    <div class="section-title">👗 個人風格與穿搭</div>
+    <div class="card">
+        <p><strong>色彩建議：</strong> 根據您的色系分析，泰國的陽光非常適合您的**暖色系**服飾。</p>
+        <p><strong>髮型提醒：</strong> 泰國天氣潮濕，建議搭配您偏好的**清爽髮型**。</p>
+        <span class="outfit-tag">推薦顏色：珊瑚色、明黃色、亞麻綠</span>
+    </div>
+
+    <div class="section-title">🗓️ 預計行程</div>
+    <div class="card">
+        <div class="day">DAY 1 - 曼谷抵達</div>
+        <p>入住酒店、考山路感受氛圍。</p>
+    </div>
+    <div class="card">
+        <div class="day">DAY 2 - 經典探索</div>
+        <p>大皇宮、鄭王廟（適合穿亮色衣服拍照）。</p>
+    </div>
+
+    <div class="section-title">📊 旅行匯率小工具</div>
+    <div class="card">
+        <p>1 HKD ≈ 4.6 THB (參考值)</p>
+        <p><i>提醒：購物預算可參考您的理財收益進行分配。</i></p>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
