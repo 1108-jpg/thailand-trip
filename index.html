@@ -1,29 +1,21 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thai🌸🌿</title>
-    <!-- iOS 專用圖示 -->
-<link rel="apple-touch-icon" href="icon.png">
-<!-- Android 與 Chrome 專用圖示 -->
-<link rel="icon" type="image/png" href="icon.png">
-<!-- 設定 App 在手機上開啟時的頂部狀態欄顏色 -->
-<meta name="theme-color" content="#f8d7ff">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <!-- Firebase SDK (使用 CDN 版本以確保跨裝置兼容) -->
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta name="theme-color" content="#f8d7ff">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 這裡已經填入妳在 image_55f936.png 中的設定
-      // 請確保這段在 <script type="module"> 標籤內
         const firebaseConfig = {
             apiKey: "AIzaSyAGCx9d4q4dMdSMMAQBJbskdyjcpkit_EM",
             authDomain: "thai-trip-b0715.firebaseapp.com",
-            // 就是這行！我幫妳校對過網址了：
             databaseURL: "https://thai-trip-b0715-default-rtdb.asia-southeast1.firebasedatabase.app", 
             projectId: "thai-trip-b0715",
             storageBucket: "thai-trip-b0715.firebasestorage.app",
@@ -145,8 +137,6 @@
         .nav-item.active { color: var(--coral); transform: scale(1.1) rotate(-5deg); }
         .nav-item span { font-size: 24px; margin-bottom: 4px; filter: drop-shadow(2px 2px 0px #000); }
 
-        .delete-btn { font-size: 24px; border: none; background: none; cursor: pointer; }
-
         input, select { 
             width: 100%; padding: 12px; margin: 10px 0; 
             background: #fff; 
@@ -163,12 +153,47 @@
             transition: transform 0.1s;
         }
         .delete-btn:active { transform: scale(1.2); }
+
+        /* 檢查清單的獨立樣式 */
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 2px dashed #eee;
+            cursor: pointer;
+        }
+        .todo-item:last-child { border-bottom: none; }
+        .todo-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--black);
+            border-radius: 6px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            background: white;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .todo-item.checked .todo-checkbox {
+            background: var(--green);
+        }
+        .todo-text {
+            font-weight: 700;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+        .todo-item.checked .todo-text {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
         
     </style>
 </head>
 <body>
 
-    <!-- 天氣頁面 -->
     <div id="weather" class="page active">
         <h1>🌞 曼谷天氣</h1>
         <div id="current-info" class="card" style="text-align:center;">
@@ -183,7 +208,6 @@
         </div>
     </div>
 
-    <!-- 航班頁面 -->
     <div id="flights" class="page">
         <h1>✈️ 登機證</h1>
         
@@ -217,9 +241,16 @@
         </div>
     </div>
 
-    <!-- 行程頁面 -->
     <div id="itinerary" class="page">
-        <h1>🎒 行程 (7/1 - 7/5)</h1>
+        <h1>🎒 行程與備忘</h1>
+        
+        <div class="card">
+            <div class="sticker-label" style="background: var(--coral); color: white;">MY CHECKLIST</div>
+            <h3>📝 我的出發前確認 (個人獨立)</h3>
+            <div id="todo-list-container">
+                </div>
+        </div>
+
         <div class="card"><div class="sticker-label">JULY 01</div><div style="font-weight:900;">🥂 抵達集合！華服派對夜 🍸</div></div>
         <div class="card"><div class="sticker-label" style="background:var(--pink)">JULY 02</div><div style="font-weight:900;">🍴 Fine Dining & 網美打卡</div></div>
         <div class="card"><div class="sticker-label" style="background:var(--green)">JULY 03</div><div style="font-weight:900;">🌿 綠色體驗 & 暹羅血拼 🛍️</div></div>
@@ -227,7 +258,6 @@
         <div class="card"><div class="sticker-label" style="background:var(--blue); color:white;">JULY 05</div><div style="font-weight:900;">👋 依依不捨回家囉</div></div>
     </div>
 
-    <!-- 靈感頁面 -->
     <div id="lists" class="page">
         <h1>👀 靈感筆記 (即時同步)</h1>
         <div class="card">
@@ -244,7 +274,6 @@
         <div id="go-list-container"></div>
     </div>
 
-    <!-- 分帳頁面 -->
     <div id="finance" class="page">
         <h1>💸 即時分帳本</h1>
         <div class="card">
@@ -270,7 +299,7 @@
     </nav>
 
    <script type="module">
-        import { onValue, push, remove, ref } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { onValue, push, remove, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // 監聽雲端資料庫更新 - 靈感筆記
         onValue(window.dbRefs.lists, (snapshot) => {
@@ -284,7 +313,7 @@
             renderPayments(data);
         });
 
-        // --- 全域函數 (方便按鈕 onclick 調用) ---
+        // --- 全域函數 ---
 
         // 刪除帳單
         window.deletePayment = function(key) {
@@ -327,7 +356,7 @@
 
         function renderPayments(data) {
             const el = document.getElementById('pay-records');
-            const keys = Object.keys(data).reverse(); // 新的在上面
+            const keys = Object.keys(data).reverse(); 
             
             if (keys.length === 0) {
                 el.innerHTML = '<div style="text-align:center; opacity:0.5; padding:20px;">目前還沒有帳單喔 🍹</div>';
@@ -390,6 +419,42 @@
     </script>
 
     <script>
+        // 內建的行李清單模板
+        const defaultItems = [
+            "🪪 護照 (確認效期 6 個月以上喔！)",
+            "🆔 身分證",
+            "📝 填寫完成泰國 TDAC (泰國入境追蹤系統)",
+            "🌐 購買泰國網卡 / 設定 eSIM",
+            "💰 兌換泰銖現金 (曼谷很多小吃只收現金！)",
+            "💳 開通海外credit card / 預備 PromptPay scan",
+            "💊 準備個人常用藥物與防蚊液 🦟",
+            "🔌 轉插",
+            "🏥 旅遊保險 / 準備電子機票外存"
+        ];
+
+        // 從 localStorage 讀取個人狀態，如果沒有就初始化
+        let userTodoState = JSON.parse(localStorage.getItem('thai_trip_user_todo')) || 
+            defaultItems.map((text, idx) => ({ id: idx, text: text, checked: false }));
+
+        function renderLocalTodoList() {
+            const container = document.getElementById('todo-list-container');
+            container.innerHTML = userTodoState.map(item => `
+                <div class="todo-item ${item.checked ? 'checked' : ''}" onclick="toggleLocalTodo(${item.id})">
+                    <div class="todo-checkbox">${item.checked ? '✓' : ''}</div>
+                    <div class="todo-text">${item.text}</div>
+                </div>
+            `).join('');
+        }
+
+        function toggleLocalTodo(id) {
+            const target = userTodoState.find(item => item.id === id);
+            if (target) {
+                target.checked = !target.checked;
+                localStorage.setItem('thai_trip_user_todo', JSON.stringify(userTodoState));
+                renderLocalTodoList();
+            }
+        }
+
         // 非 Firebase 邏輯的傳統腳本 (天氣, 導航等)
         const apiKey = '60cc6ca7af6352b8d7a184999d857f16';
 
@@ -423,6 +488,8 @@
             } catch(e) {}
         }
 
+        // 初始化執行
+        renderLocalTodoList();
         fetchWeather(); updateCountdown();
         setInterval(updateCountdown, 60000);
     </script>
