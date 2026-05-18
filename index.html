@@ -177,7 +177,7 @@
         .todo-text { font-weight: 700; font-size: 15px; transition: 0.2s; }
         .todo-item.checked .todo-text { text-decoration: line-through; opacity: 0.5; }
 
-        /* 行李極簡小徽章組合 */
+        /* 行禮極簡小徽章組合 */
         .baggage-badge-box {
             display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;
         }
@@ -200,7 +200,7 @@
             <div id="weather-desc" style="font-weight:900; margin-top:10px;">準備出發中...</div>
         </div>
         <div class="card">
-            <h3>✨ 未來未來預報</h3>
+            <h3>✨ 未來預報</h3>
             <div id="forecast-list"></div>
         </div>
     </div>
@@ -494,7 +494,6 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
             
-            // 尋找當前點擊的按鈕並加上 active
             const buttons = document.querySelectorAll('.nav-item');
             buttons.forEach(btn => {
                 if(btn.getAttribute('onclick').includes(pageId)) {
@@ -514,15 +513,14 @@
             document.getElementById('countdown').innerHTML = `${days} 天 ${hours} 小時`;
         }
 
-        // 根據 OpenWeather 狀態代碼，轉換成簡單生動的對應小 Emoji
         function getWeatherEmoji(id) {
-            if (id >= 200 && id < 300) return '⛈️'; // 雷雨
-            if (id >= 300 && id < 600) return '🌧️'; // 下雨
-            if (id >= 600 && id < 700) return '❄️'; // 雪 (曼谷不太可能哈哈)
-            if (id >= 700 && id < 800) return '🌫️'; // 霧/霾
-            if (id === 800) return '☀️';            // 晴天
-            if (id === 801 || id === 802) return '⛅'; // 晴時多雲
-            return '☁️';                            // 多雲陰天
+            if (id >= 200 && id < 300) return '⛈️';
+            if (id >= 300 && id < 600) return '🌧️';
+            if (id >= 600 && id < 700) return '❄️';
+            if (id >= 700 && id < 800) return '🌫️';
+            if (id === 800) return '☀️';
+            if (id === 801 || id === 802) return '⛅';
+            return '☁️';
         }
 
         async function fetchWeather() {
@@ -535,20 +533,22 @@
                 const fRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Bangkok&appid=${apiKey}&units=metric`);
                 const fData = await fRes.json();
                 
-                // 篩選出每天中午 12 點的預報，做成未來幾天預報清單
                 document.getElementById('forecast-list').innerHTML = fData.list.filter(i => i.dt_txt.includes("12:00:00")).map(d => {
                     const emoji = getWeatherEmoji(d.weather[0].id);
-                    const dayName = new Date(d.dt*1000).toLocaleDateString('zh-HK',{weekday:'short'});
+                    const targetDate = new Date(d.dt * 1000);
+                    // 格式化日期為 "MM/DD (週X)"
+                    const dateStr = `${targetDate.getMonth() + 1}/${targetDate.getDate()}`;
+                    const weekdayStr = targetDate.toLocaleDateString('zh-HK', { weekday: 'short' });
+                    
                     return `
                         <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; font-weight:900; border-bottom: 1px dashed #eee;">
-                            <span>📅 ${dayName}</span>
+                            <span>✨ ${dateStr} (${weekdayStr})</span>
                             <span style="color:var(--pink); font-size: 18px;">${emoji} ${Math.round(d.main.temp)}°C</span>
                         </div>`;
                 }).join('');
             } catch(e) {}
         }
 
-        // 初始化執行
         renderLocalTodoList();
         fetchWeather(); updateCountdown();
         setInterval(updateCountdown, 60000);
