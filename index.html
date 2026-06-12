@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thai 🌸🌿</title>
+    <!-- iOS 專用圖示 -->
     <link class="js-meta-icon" rel="apple-touch-icon" href="icon.png">
+    <!-- Android 與 Chrome 專用圖示 -->
     <link rel="icon" type="image/png" href="icon.png">
+    <!-- 設定 App 在手機上開啟時的頂部狀態欄顏色 -->
     <meta name="theme-color" content="#f8d7ff">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     
+    <!-- Firebase SDK (使用 CDN 版本以確保跨裝置兼容) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -88,13 +92,13 @@
             box-shadow: inset 0 -2px 0px rgba(0,0,0,0.1);
         }
 
-        /* 頂部 Excel 風格頁籤列 */
+        /* 頂部導航列 - 網格化與 Banner 風格同步 */
         .nav-bar { 
             height: 60px;
             display: flex; 
             justify-content: space-around; 
             align-items: center; 
-            padding: 0 5px;
+            padding: 0;
             background: #fafafa;
         }
         .nav-item { 
@@ -111,12 +115,18 @@
             height: 100%;
             cursor: pointer;
             transition: 0.1s;
-            border-bottom: 4px solid transparent; 
+            border-right: 3px solid var(--black);
+            box-sizing: border-box;
         }
+        .nav-item:last-child {
+            border-right: none;
+        }
+        /* 作用中頁籤：完美移植 Banner 霓虹漸層與文字立體黑影 */
         .nav-item.active { 
-            color: var(--coral); 
-            background: var(--white);
-            border-bottom: 4px solid var(--coral);
+            color: var(--white); 
+            background: linear-gradient(135deg, #ff9ff3 0%, #ff6b6b 50%, #feca57 100%);
+            text-shadow: 1.5px 1.5px 0px var(--black), -0.5px -0.5px 0px var(--black), 0.5px -0.5px 0px var(--black), -0.5px 0.5px 0px var(--black);
+            box-shadow: inset 0 -2px 0px rgba(0,0,0,0.1);
         }
         .nav-item span { font-size: 20px; margin-bottom: 2px; filter: drop-shadow(1.5px 1.5px 0px #000); }
 
@@ -282,6 +292,7 @@
 </head>
 <body>
 
+    <!-- 頂部固定綜合導航區塊 -->
     <div class="top-header-container">
         <div class="app-banner">✨ THAI ADVENTURE 🌸</div>
         <nav class="nav-bar">
@@ -294,6 +305,7 @@
         </nav>
     </div>
 
+    <!-- 天氣頁面 -->
     <div id="weather" class="page active">
         <h1>🌞 曼谷天氣</h1>
         <div id="current-info" class="card" style="text-align:center;">
@@ -308,6 +320,7 @@
         </div>
     </div>
 
+    <!-- 航班頁面 -->
     <div id="flights" class="page">
         <h1>✈️ 航班與住宿</h1>
         <div class="card" style="background: var(--yellow); text-align: center; padding: 12px;">
@@ -315,12 +328,14 @@
             <div id="countdown" style="font-size: 22px; font-weight: 900; text-shadow: 1.5px 1.5px 0 var(--white);">載入中...</div>
         </div>
 
+        <!-- 去程區塊 -->
         <div class="card clickable-accordion" onclick="toggleAccordion(this)">
             <div class="accordion-header">
                 <div class="accordion-header-left"><div class="sticker-label">1/7</div><div class="accordion-title">🛫 去程</div></div>
                 <div class="accordion-arrow">▼</div>
             </div>
             <div class="accordion-content" onclick="event.stopPropagation();">
+                <!-- Cindy & Ling 去程 -->
                 <div class="card mini-ticket" style="border-left: 6px solid var(--blue);">
                     <div class="sticker-label" style="background: var(--blue); color: white;">Cindy & LING</div>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
@@ -337,6 +352,7 @@
                         </div>
                     </div>
                 </div>
+                <!-- Ada 去程 -->
                 <div class="card mini-ticket" style="border-left: 6px solid var(--pink);">
                     <div class="sticker-label" style="background: var(--pink);">ADA</div>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
@@ -349,12 +365,14 @@
             </div>
         </div>
 
+        <!-- 回程區塊 -->
         <div class="card clickable-accordion" onclick="toggleAccordion(this)">
             <div class="accordion-header">
                 <div class="accordion-header-left"><div class="sticker-label" style="background:var(--pink)">5/7</div><div class="accordion-title">🛬 回程</div></div>
                 <div class="accordion-arrow">▼</div>
             </div>
             <div class="accordion-content" onclick="event.stopPropagation();">
+                <!-- Ada 回程 -->
                 <div class="card mini-ticket" style="border-left: 6px solid var(--pink);">
                     <div class="sticker-label" style="background: var(--pink);">ADA</div>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
@@ -364,6 +382,7 @@
                     </div>
                     <div class="ticket-cutout"><div style="font-size: 11px; font-weight: 900; color: var(--green);">長榮航空 BR 212</div></div>
                 </div>
+                <!-- Cindy & Ling 回程 -->
                 <div class="card mini-ticket" style="border-left: 6px solid var(--blue);">
                     <div class="sticker-label" style="background: var(--blue); color: white;">Cindy & LING</div>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
@@ -383,6 +402,7 @@
             </div>
         </div>
 
+        <!-- 下榻飯店 -->
         <h3 style="margin-top:20px; font-weight:900; color:var(--black); font-size:16px;">🏨 下榻飯店</h3>
         <div class="card" style="border-left: 6px solid var(--green);">
             <div class="sticker-label" style="background: var(--green);">BANGKOK STAY</div>
@@ -390,7 +410,7 @@
             
             <div style="margin-top: 10px; font-size: 12px; font-weight: 700; line-height: 1.5;">
                 <b style="color:var(--coral);">🇹🇭 泰文地址 (計程車複製)：</b><br>
-                <span id="addr-th">โรงแรมอินไซด์ บาย มีเลีย กรุงเทพฯ สุขุมวิท, 1479 ถนนสุขุมวิท, แขวงพระโขนงเหนือ, เขตวัฒนา, กรุงเทพมหานคร 10110</span><br>
+                <span id="addr-th">โรงแรมอินไซด์ บาย มีเลีย กรุงเทพฯ สุขุมวิท, 1479 ถนนสุขุมวิท, แขวงพระโขนงเหนือ, เขตวัฒนา, กรุงเทพมหาน商 10110</span><br>
                 <button class="copy-btn" onclick="copyAddress('addr-th')">📋 複製泰文地址</button>
             </div>
 
@@ -404,10 +424,12 @@
         </div>
     </div>
 
+    <!-- 行程頁面 -->
     <div id="itinerary" class="page">
         <h1>🎒 行程計畫</h1>
         <p style="text-align: center; font-size: 12px; opacity: 0.6; margin-top: -8px; font-weight: 700;">✨ 點擊各天卡片可展開或收合詳情 ✨</p>
         
+        <!-- Day 1 -->
         <div class="card clickable-accordion" onclick="toggleAccordion(this)">
             <div class="accordion-header">
                 <div class="accordion-header-left"><div class="sticker-label">01/07</div><div class="accordion-title">🥂 抵達集合！河畔微醺派對</div></div>
@@ -437,6 +459,7 @@
             </div>
         </div>
 
+        <!-- Day 2 -->
         <div class="card clickable-accordion" onclick="toggleAccordion(this)">
             <div class="accordion-header">
                 <div class="accordion-header-left"><div class="sticker-label" style="background:var(--pink)">02/07</div><div class="accordion-title">🧶 復古莊園與地毯手作</div></div>
@@ -458,6 +481,7 @@
             </div>
         </div>
 
+        <!-- Day 3 -->
         <div class="card clickable-accordion" onclick="toggleAccordion(this)">
             <div class="accordion-header">
                 <div class="accordion-header-left"><div class="sticker-label" style="background:var(--green)">03/07</div><div class="accordion-title">💆 貴婦頂級 Spa 與發光樹</div></div>
@@ -483,6 +507,7 @@
             </div>
         </div>
 
+        <!-- Day 4 -->
         <div class="card clickable-accordion" onclick="toggleAccordion(this)">
             <div class="accordion-header">
                 <div class="accordion-header-left"><div class="sticker-label" style="background:var(--yellow)">04/07</div><div class="accordion-title">🧪 專屬香水調配與老上海夜</div></div>
@@ -508,6 +533,7 @@
             </div>
         </div>
 
+        <!-- Day 5 -->
         <div class="card clickable-accordion" onclick="toggleAccordion(this)">
             <div class="accordion-header">
                 <div class="accordion-header-left"><div class="sticker-label" style="background:var(--blue); color:white;">05/07</div><div class="accordion-title">👙 泳池大片與 Siam 最後爆買</div></div>
@@ -534,6 +560,7 @@
         </div>
     </div>
 
+    <!-- 檢查清單頁面 -->
     <div id="checklist" class="page">
         <h1>✅ 出發前檢查</h1>
         <div class="card">
@@ -543,6 +570,7 @@
         </div>
     </div>
 
+    <!-- 靈感頁面 -->
     <div id="lists" class="page">
         <h1>👀 靈感筆記</h1>
         <div class="card">
@@ -556,9 +584,11 @@
         <div id="go-list-container"></div>
     </div>
 
+    <!-- 分帳與匯率頁面 -->
     <div id="finance" class="page">
         <h1>💸 即時分帳與匯率</h1>
 
+        <!-- 匯率換算器區塊 -->
         <div class="card" style="border-color: var(--blue);">
             <div class="sticker-label" style="background:var(--blue); color:var(--black);">EXCHANGE RATE</div>
             <p style="font-size: 11px; opacity: 0.6; margin: 4px 0 8px 0;" id="rate-timestamp">匯率更新中...</p>
