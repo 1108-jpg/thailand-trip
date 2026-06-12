@@ -7,7 +7,7 @@
     <!-- iOS 專用圖示 -->
     <link class="js-meta-icon" rel="apple-touch-icon" href="icon.png">
     <!-- Android 與 Chrome 專用圖示 -->
-    <link class="icon" type="image/png" href="icon.png">
+    <link rel="icon" type="image/png" href="icon.png">
     <!-- 設定 App 在手機上開啟時的頂部狀態欄顏色 -->
     <meta name="theme-color" content="#f8d7ff">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -61,9 +61,10 @@
             background-image: radial-gradient(var(--pink) 1px, transparent 1px);
             background-size: 20px 20px;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* 頂部固定綜合導航區塊 (Banner + Tabs Container) */
+        /* 頂部固定綜合導航區塊 (高度調整為容納雙排 2x3 控制鍵) */
         .top-header-container {
             position: fixed;
             top: 0;
@@ -78,12 +79,12 @@
 
         /* 熱帶漸層霓虹 Banner */
         .app-banner {
-            height: 52px;
+            height: 48px;
             border-bottom: 3px solid var(--black);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 19px;
+            font-size: 18px;
             font-weight: 900;
             letter-spacing: 2px;
             color: var(--white);
@@ -92,63 +93,54 @@
             box-shadow: inset 0 -2px 0px rgba(0,0,0,0.1);
         }
 
-        /* 導航按鈕列 - 支援手機滑動 */
+        /* 2x3 掌上電玩風格控制板 */
         .nav-bar { 
-            height: 62px;
-            display: flex; 
-            align-items: center; 
-            gap: 8px;
-            padding: 0 12px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            padding: 8px 12px;
             background: #fafafa;
-            overflow-x: auto;
-            white-space: nowrap;
             box-sizing: border-box;
-            scrollbar-width: none; /* Firefox 隱藏滾動條 */
-            -webkit-overflow-scrolling: touch;
-        }
-        .nav-bar::-webkit-scrollbar {
-            display: none; /* Chrome & Safari 隱藏滾動條 */
         }
 
-        /* 單個 3D 按鈕樣式 */
+        /* Neobrutalism 3D 電子琴鍵按鈕 */
         .nav-item { 
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
             border: 2px solid var(--black); 
             background: var(--white); 
             color: var(--black); 
-            font-size: 12px; 
+            font-size: 11px; 
             font-weight: 900; 
             height: 38px;
-            padding: 0 14px;
-            border-radius: 50px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.1s ease;
+            transition: all 0.08s ease;
             box-shadow: 2.5px 2.5px 0px var(--black);
-            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
             box-sizing: border-box;
+            user-select: none;
         }
         .nav-item span { font-size: 16px; }
 
-        /* 點擊與活躍狀態的按鈕 */
+        /* 點擊及啟用狀態：模擬實體鍵凹陷 */
         .nav-item.active { 
             color: var(--white); 
             background: linear-gradient(135deg, #ff9ff3 0%, #ff6b6b 50%, #feca57 100%);
             text-shadow: 1px 1px 0px var(--black), -0.5px -0.5px 0px var(--black), 0.5px -0.5px 0px var(--black), -0.5px 0.5px 0px var(--black);
-            box-shadow: 1px 1px 0px var(--black);
-            transform: translate(1.5px, 1.5px);
+            box-shadow: 0.5px 0.5px 0px var(--black);
+            transform: translate(2px, 2px);
         }
         .nav-item:active {
-            transform: translate(1.5px, 1.5px);
-            box-shadow: 1px 1px 0px var(--black);
+            transform: translate(2px, 2px);
+            box-shadow: 0.5px 0.5px 0px var(--black);
         }
 
-        /* 頁面容器 */
+        /* 頁面容器 (由於雙排按鈕高度增加，padding 頂部需調整為 162px 以免遮擋) */
         .page { 
             display: none; 
-            padding: 132px 20px 25px 20px; 
+            padding: 162px 20px 25px 20px; 
             animation: popIn 0.3s ease-out; 
         }
         .page.active { display: block; }
@@ -161,7 +153,7 @@
             margin-top: 5px;
         }
 
-        /* 預設卡片 */
+        /* 靜態純資訊卡片 (平整細框，無立體影，不令人困惑) */
         .card { 
             background: var(--white); 
             border: 3px solid var(--black);
@@ -172,7 +164,7 @@
             position: relative;
         }
 
-        /* 可折疊卡片 */
+        /* 可展開的立體卡片 (帶有 3D 厚影，暗示可以點擊按壓) */
         .card.clickable-accordion {
             cursor: pointer;
             box-shadow: 5px 5px 0px var(--black);
@@ -303,20 +295,82 @@
             background: #fffde7; border: 2px solid var(--black); border-radius: 10px; padding: 4px 8px; font-size: 10px; font-weight: 900;
             display: flex; align-items: center; gap: 3px; box-shadow: 1.5px 1.5px 0px var(--black);
         }
+
+        /* 100% 遵守規定：自訂 3D 霓虹對話框 (取代內建 confirm/alert) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(2px);
+            z-index: 5000; display: none; align-items: center; justify-content: center;
+            padding: 20px; box-sizing: border-box;
+        }
+        .modal-box {
+            background: var(--white); border: 4px solid var(--black); border-radius: 20px;
+            box-shadow: 8px 8px 0px var(--black); padding: 24px; max-width: 340px; width: 100%;
+            text-align: center; animation: popUpModal 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popUpModal { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-title { font-size: 18px; font-weight: 900; margin-bottom: 12px; color: var(--coral); }
+        .modal-text { font-size: 14px; font-weight: 700; margin-bottom: 20px; line-height: 1.5; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: center; }
+        .modal-btn {
+            border: 2px solid var(--black); padding: 8px 16px; border-radius: 50px;
+            font-size: 13px; font-weight: 900; cursor: pointer; transition: 0.1s;
+            box-shadow: 2px 2px 0px var(--black);
+        }
+        .modal-btn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0px var(--black); }
+        .modal-btn.confirm { background: var(--green); }
+        .modal-btn.cancel { background: #f1f5f9; }
+
+        /* Y2K 貼紙風烤吐司訊息盒 (Toast) */
+        .toast-container {
+            position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+            z-index: 6000; display: flex; flex-direction: column; gap: 8px;
+            width: 90%; max-width: 320px; pointer-events: none;
+        }
+        .toast {
+            background: var(--yellow); border: 2px solid var(--black); border-radius: 12px;
+            padding: 10px 16px; font-size: 12px; font-weight: 900; color: var(--black);
+            box-shadow: 3px 3px 0px var(--black); display: flex; align-items: center; gap: 8px;
+            animation: slideInToast 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-sizing: border-box;
+        }
+        @keyframes slideInToast { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* 點擊粒子特效物件 */
+        .click-particle {
+            position: fixed; pointer-events: none; z-index: 9999;
+            font-size: 14px; animation: particleFly 0.6s ease-out forwards;
+        }
+        @keyframes particleFly {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+            100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2) rotate(var(--rot)); opacity: 0; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- 頂部固定綜合導航區塊 -->
+    <!-- 100% 規定：客製化對話框 DOM 結構 -->
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title" id="modal-title-text">✨ 系統通知</div>
+            <div class="modal-text" id="modal-body-text">確認要執行這個動作嗎？</div>
+            <div class="modal-buttons" id="modal-btn-container"></div>
+        </div>
+    </div>
+
+    <!-- 烤吐司訊息中心 -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- 頂部固定綜合導航區塊 (2x3 電玩控制板，零滑動、好直覺) -->
     <div class="top-header-container">
         <div class="app-banner">✨ THAI ADVENTURE 🌸</div>
         <nav class="nav-bar">
-            <button class="nav-item active" onclick="showPage('weather')"><span>☀️</span>天氣</button>
-            <button class="nav-item" onclick="showPage('flights')"><span>✈️</span>航班</button>
-            <button class="nav-item" onclick="showPage('itinerary')"><span>🗺️</span>行程</button>
-            <button class="nav-item" onclick="showPage('checklist')"><span>✅</span>檢查</button>
-            <button class="nav-item" onclick="showPage('lists')"><span>🎨</span>靈感</button>
-            <button class="nav-item" onclick="showPage('finance')"><span>💰</span>分帳</button>
+            <button class="nav-item active" onclick="showPage('weather', event)"><span>☀️</span>天氣</button>
+            <button class="nav-item" onclick="showPage('flights', event)"><span>✈️</span>航班</button>
+            <button class="nav-item" onclick="showPage('itinerary', event)"><span>🗺️</span>行程</button>
+            <button class="nav-item" onclick="showPage('checklist', event)"><span>✅</span>檢查</button>
+            <button class="nav-item" onclick="showPage('lists', event)"><span>🎨</span>靈感</button>
+            <button class="nav-item" onclick="showPage('finance', event)"><span>💰</span>分帳</button>
         </nav>
     </div>
 
@@ -425,7 +479,7 @@
             
             <div style="margin-top: 10px; font-size: 12px; font-weight: 700; line-height: 1.5;">
                 <b style="color:var(--coral);">🇹🇭 泰文地址 (計程車複製)：</b><br>
-                <span id="addr-th">โรงแรมอินไซด์ บาย มีเลีย กรุงเทพฯ สุขุมวิท, 1479 ถนนสุขุมวิ文, แขวงพระโขนงเหนือ, เขตวัฒนา, กรุงเทพมหานคร 10110</span><br>
+                <span id="addr-th">โรงแรมอินไซด์ บาย มีเลีย กรุงเทพฯ สุขุมวิท, 1479 ถนนสุขุมวิท, แขวงพระโขนงเหนือ, เขตวัฒนา, กรุงเทพมหานคร 10110</span><br>
                 <button class="copy-btn" onclick="copyAddress('addr-th')">📋 複製泰文地址</button>
             </div>
 
@@ -648,32 +702,40 @@
         });
 
         window.deletePayment = function(key) {
-            if (confirm("確定要刪除這筆帳單嗎？")) { remove(ref(window.db, `trip_payments/${key}`)); }
+            showConfirm("確定要刪除這筆帳單嗎？", () => {
+                remove(ref(window.db, `trip_payments/${key}`));
+                showToast("🗑️ 帳單已成功刪除！");
+            });
         };
 
         window.deleteItem = function(type, key) {
-            if (confirm("要刪掉這個靈感嗎？")) { remove(ref(window.db, `trip_lists/${type}/${key}`)); }
+            showConfirm("確定要刪掉這個靈感嗎？", () => {
+                remove(ref(window.db, `trip_lists/${type}/${key}`));
+                showToast("🗑️ 靈感貼紙已撕除！");
+            });
         };
 
         window.addListItem = function() {
             const type = document.getElementById('list-type').value;
             const title = document.getElementById('list-title').value;
             const url = document.getElementById('list-url').value;
-            if (!title) return alert("請輸入內容喔！");
+            if (!title) return showCustomAlert("請輸入內容喔！");
             push(ref(window.db, `trip_lists/${type}`), { title, url });
             document.getElementById('list-title').value = '';
             document.getElementById('list-url').value = '';
+            showToast("✨ 成功貼上新靈感貼紙！");
         };
 
         window.addPayment = function() {
             const desc = document.getElementById('pay-desc').value;
             const amount = parseFloat(document.getElementById('pay-amount').value);
             const payer = document.getElementById('payer').value;
-            if (!desc || !amount) return alert("請填寫金額和說明！");
+            if (!desc || !amount) return showCustomAlert("請填寫金額和說明喔！");
             const per = Math.round(amount / 3);
             push(window.dbRefs.payments, { desc, amount, payer, per });
             document.getElementById('pay-desc').value = '';
             document.getElementById('pay-amount').value = '';
+            showToast("💰 共同小帳本已即時同步！");
         };
 
         function renderPayments(data) {
@@ -730,6 +792,120 @@
     <script>
         let rates = { thbToHkd: 0.227 };
 
+        // 🔊 100% 電影感純網頁合成音效 (8-bit)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                if (type === 'tap') { // 啵啵啵點擊音
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(450, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(700, audioCtx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+                } else if (type === 'check') { // 啾～打勾勾音
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+                } else if (type === 'uncheck') { // 嗚～取消打勾
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+                }
+            } catch (e) {}
+        }
+
+        // 🌟 點擊噴射 Y2K 拍貼機彩色星星愛心特效
+        function createBurst(e) {
+            const x = e.clientX || (e.touches && e.touches[0].clientX);
+            const y = e.clientY || (e.touches && e.touches[0].clientY);
+            if (!x || !y) return;
+            
+            const shapes = ['🌸', '✨', '💖', '⭐', '🌈', '🌿'];
+            for (let i = 0; i < 8; i++) {
+                const el = document.createElement('span');
+                el.className = 'click-particle';
+                el.innerText = shapes[Math.floor(Math.random() * shapes.length)];
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+                
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 40 + Math.random() * 50;
+                const dx = Math.cos(angle) * dist;
+                const dy = Math.sin(angle) * dist;
+                const rot = -45 + Math.random() * 90;
+                
+                el.style.setProperty('--dx', `${dx}px`);
+                el.style.setProperty('--dy', `${dy}px`);
+                el.style.setProperty('--rot', `${rot}deg`);
+                
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 600);
+            }
+        }
+
+        // 🍞 貼紙烤吐司 (Toast) 彈出訊息
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<span>🌈</span> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.25s ease';
+                setTimeout(() => toast.remove(), 250);
+            }, 2500);
+        }
+
+        // 🛑 完全自訂 Modal 對話框系統
+        let modalCallback = null;
+        function showCustomAlert(text) {
+            playSound('tap');
+            document.getElementById('modal-title-text').innerText = "🌸 注意喔！";
+            document.getElementById('modal-body-text').innerText = text;
+            const container = document.getElementById('modal-btn-container');
+            container.innerHTML = `<button class="modal-btn confirm" onclick="closeModal()">好滴！</button>`;
+            document.getElementById('custom-modal').style.display = 'flex';
+        }
+
+        function showConfirm(text, callback) {
+            playSound('tap');
+            modalCallback = callback;
+            document.getElementById('modal-title-text').innerText = "❓ 請確認一下喔";
+            document.getElementById('modal-body-text').innerText = text;
+            const container = document.getElementById('modal-btn-container');
+            container.innerHTML = `
+                <button class="modal-btn confirm" onclick="confirmModal()">確定！</button>
+                <button class="modal-btn cancel" onclick="closeModal()">算了</button>
+            `;
+            document.getElementById('custom-modal').style.display = 'flex';
+        }
+
+        window.closeModal = function() {
+            playSound('tap');
+            document.getElementById('custom-modal').style.display = 'none';
+            modalCallback = null;
+        }
+
+        window.confirmModal = function() {
+            playSound('tap');
+            document.getElementById('custom-modal').style.display = 'none';
+            if (modalCallback) modalCallback();
+            modalCallback = null;
+        }
+
         async function fetchExchangeRates() {
             try {
                 const res = await fetch('https://open.er-api.com/v6/latest/THB');
@@ -758,14 +934,18 @@
             }
         }
 
-        function toggleAccordion(cardElement) { cardElement.classList.toggle('expanded'); }
+        function toggleAccordion(cardElement) { 
+            playSound('tap');
+            cardElement.classList.toggle('expanded'); 
+        }
 
         function copyAddress(id) {
             const text = document.getElementById(id).innerText;
+            // 由於 iframe 剪貼簿限制，此段在沙盒可能回退到手動複製
             navigator.clipboard.writeText(text).then(() => {
-                alert("👍 地址複製成功！可以直接貼給司機囉！");
+                showToast("📋 地址已完美複製！");
             }).catch(() => {
-                alert("❌ 複製失敗，請手動選取複製");
+                showCustomAlert("地址備份如下：\n" + text + "\n(請長按選取手動複製喔！)");
             });
         }
 
@@ -801,6 +981,7 @@
             const target = userTodoState.find(item => item.id === id);
             if (target) {
                 target.checked = !target.checked;
+                playSound(target.checked ? 'check' : 'uncheck');
                 localStorage.setItem('thai_trip_user_todo', JSON.stringify(userTodoState));
                 renderLocalTodoList();
             }
@@ -808,7 +989,11 @@
 
         const apiKey = '60cc6ca7af6352b8d7a184999d857f16';
 
-        function showPage(pageId) {
+        function showPage(pageId, e) {
+            if (e) {
+                playSound('tap');
+                createBurst(e);
+            }
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
