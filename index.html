@@ -59,66 +59,111 @@
             min-height: 100vh;
         }
 
-        .page { display: none; padding: 25px; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        /* 置頂 Banner 樣式 */
+        .app-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: var(--white);
+            border-bottom: 3px solid var(--black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 0px var(--pink);
+            z-index: 2000;
+            box-shadow: 0 4px 0px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+        }
+
+        /* 頁面容器：增加頂部 padding 避免被 Banner 遮擋 */
+        .page { 
+            display: none; 
+            padding: 85px 20px 25px 20px; 
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
         .page.active { display: block; }
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         h1 { 
-            font-size: 32px; font-weight: 900; color: var(--black);
-            text-shadow: 3px 3px 0px var(--white), 6px 6px 0px var(--blue);
-            margin-bottom: 20px; text-align: center;
+            font-size: 26px; font-weight: 900; color: var(--black);
+            text-shadow: 2px 2px 0px var(--white), 4px 4px 0px var(--blue);
+            margin-bottom: 15px; text-align: center;
+            margin-top: 5px;
         }
 
         .card { 
             background: var(--white); 
             border: 3px solid var(--black);
-            border-radius: 20px;
-            padding: 20px; 
-            margin: 15px 0; 
-            box-shadow: 6px 6px 0px var(--black);
+            border-radius: 16px;
+            padding: 16px; 
+            margin: 12px 0; 
+            box-shadow: 5px 5px 0px var(--black);
             position: relative;
         }
+
+        /* 迷你版機票專用樣式 */
+        .mini-ticket {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 12px;
+        }
+        .mini-ticket .ticket-cutout {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 2px dashed var(--black);
+        }
+        .mini-ticket .ticket-cutout::before, .mini-ticket .ticket-cutout::after {
+            top: -9px; width: 14px; height: 14px;
+        }
+        .mini-ticket .ticket-cutout::before { left: -23px; }
+        .mini-ticket .ticket-cutout::after { right: -23px; }
 
         .sticker-label {
             display: inline-block;
             background: var(--yellow);
             border: 2px solid var(--black);
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 50px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 900;
-            margin-bottom: 8px;
-            box-shadow: 2px 2px 0px var(--black);
+            margin-bottom: 6px;
+            box-shadow: 1.5px 1.5px 0px var(--black);
         }
-
-        .ticket-cutout {
-            border-top: 3px dashed var(--black);
-            margin-top: 15px;
-            padding-top: 15px;
-            position: relative;
-        }
-        .ticket-cutout::before, .ticket-cutout::after {
-            content: '';
-            position: absolute;
-            top: -12px;
-            width: 20px;
-            height: 20px;
-            background: var(--bg-purple);
-            border: 3px solid var(--black);
-            border-radius: 50%;
-        }
-        .ticket-cutout::before { left: -33px; }
-        .ticket-cutout::after { right: -33px; }
 
         .add-btn { 
             background: var(--green); 
             color: var(--black); border: 3px solid var(--black); 
-            width: 100%; padding: 15px; 
-            border-radius: 50px; font-weight: 900; font-size: 18px;
-            box-shadow: 4px 4px 0px var(--black);
+            width: 100%; padding: 12px; 
+            border-radius: 50px; font-weight: 900; font-size: 16px;
+            box-shadow: 3px 3px 0px var(--black);
             cursor: pointer; transition: 0.1s;
         }
-        .add-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--black); }
+        .add-btn:active { transform: translate(1px, 1px); box-shadow: 1.5px 1.5px 0px var(--black); }
+
+        /* 地圖連結按鈕樣式 */
+        .map-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: var(--blue);
+            color: var(--black);
+            border: 2px solid var(--black);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 900;
+            text-decoration: none;
+            box-shadow: 2px 2px 0px var(--black);
+            margin-top: 10px;
+            transition: 0.1s;
+        }
+        .map-btn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0px var(--black); }
 
         .nav-bar { 
             position: fixed; bottom: 20px; left: 2.5%; width: 95%; height: 80px; 
@@ -151,45 +196,30 @@
         .delete-btn:active { transform: scale(1.2); }
 
         /* 檢查清單樣式 */
-        .todo-item {
-            display: flex;
-            align-items: center;
-            padding: 14px 0;
-            border-bottom: 2px dashed #eee;
-            cursor: pointer;
-        }
+        .todo-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 2px dashed #eee; cursor: pointer; }
         .todo-item:last-child { border-bottom: none; }
         .todo-checkbox {
-            width: 24px;
-            height: 24px;
-            border: 2px solid var(--black);
-            border-radius: 6px;
-            margin-right: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            background: white;
-            transition: 0.2s;
-            flex-shrink: 0;
+            width: 22px; height: 22px; border: 2px solid var(--black); border-radius: 6px; margin-right: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 13px; background: white; transition: 0.2s; flex-shrink: 0;
         }
         .todo-item.checked .todo-checkbox { background: var(--green); }
-        .todo-text { font-weight: 700; font-size: 15px; transition: 0.2s; }
+        .todo-text { font-weight: 700; font-size: 14px; transition: 0.2s; }
         .todo-item.checked .todo-text { text-decoration: line-through; opacity: 0.5; }
 
-        /* 行禮極簡小徽章組合 */
-        .baggage-badge-box {
-            display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;
-        }
+        /* 行李極簡小徽章組合 */
+        .baggage-badge-box { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
         .bag-badge {
-            background: #fffde7; border: 2px solid var(--black);
-            border-radius: 12px; padding: 6px 10px; font-size: 11px; font-weight: 900;
-            display: flex; align-items: center; gap: 4px; box-shadow: 2px 2px 0px var(--black);
+            background: #fffde7; border: 2px solid var(--black); border-radius: 10px; padding: 4px 8px; font-size: 10px; font-weight: 900;
+            display: flex; align-items: center; gap: 3px; box-shadow: 1.5px 1.5px 0px var(--black);
         }
         
     </style>
 </head>
 <body>
+
+    <div class="app-banner">
+        ✨ THAI ADVENTURE 🌸
+    </div>
 
     <div id="weather" class="page active">
         <h1>🌞 曼谷天氣</h1>
@@ -206,87 +236,86 @@
     </div>
 
     <div id="flights" class="page">
-        <h1>✈️ 航班資訊</h1>
+        <h1>✈️ 航班與住宿</h1>
         
-        <div class="card" style="background: var(--yellow); text-align: center;">
-            <div style="font-size: 14px; font-weight: 900; margin-bottom: 5px;">距離 7/1 泰國大冒險還有</div>
-            <div id="countdown" style="font-size: 24px; font-weight: 900; text-shadow: 2px 2px 0 var(--white);">載入中...</div>
+        <div class="card" style="background: var(--yellow); text-align: center; padding: 12px;">
+            <div style="font-size: 13px; font-weight: 900; margin-bottom: 3px;">距離 7/1 泰國大冒險還有</div>
+            <div id="countdown" style="font-size: 22px; font-weight: 900; text-shadow: 1.5px 1.5px 0 var(--white);">載入中...</div>
         </div>
 
-        <h3 style="margin-top:25px; font-weight:900; color:var(--black);">🛫 去程航班 (1/7)</h3>
+        <h3 style="margin-top:15px; font-weight:900; color:var(--black); font-size:16px;">🛫 去程航班 (1/7)</h3>
 
-        <div class="card">
-            <div class="sticker-label" style="background: var(--blue); color: white;">PASSENGERS: Cindy & LING</div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
-                <div><div style="font-size: 10px; opacity: 0.6;">FROM</div><div style="font-size: 20px; font-weight: 900;">HKG</div></div>
-                <div style="font-size: 20px;">🥟</div>
-                <div style="text-align: right;"><div style="font-size: 10px; opacity: 0.6;">TO</div><div style="font-size: 20px; font-weight: 900;">BKK</div></div>
+        <div class="card mini-ticket" style="border-left: 6px solid var(--blue);">
+            <div class="sticker-label" style="background: var(--blue); color: white;">Cindy & LING</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
+                <div><span style="font-size: 9px; opacity: 0.6;">HKG</span> <b style="font-size: 16px;">07:40</b></div>
+                <div style="font-size: 14px;">✈️</div>
+                <div><span style="font-size: 9px; opacity: 0.6;">BKK</span> <b style="font-size: 16px;">09:35</b></div>
             </div>
             <div class="ticket-cutout">
-                <div style="font-size: 13px; font-weight: 900; color: var(--coral);">航空：聯合航空 UA 820</div>
-                <div style="font-size: 12px; font-weight: 700; opacity: 0.8; margin-top: 4px;">
-                    🛫 Takeoff (香港起飛)：07:40 AM<br>
-                    🛬 Landing (曼谷抵達)：09:35 AM
-                </div>
+                <div style="font-size: 11px; font-weight: 900; color: var(--coral);">聯合航空 UA 820</div>
                 <div class="baggage-badge-box">
-                    <div class="bag-badge">👜 隨身包 x1</div>
-                    <div class="bag-badge">🧳 手提行李 x1</div>
+                    <div class="bag-badge">👜 隨身包</div>
+                    <div class="bag-badge">🧳 手提</div>
                     <div class="bag-badge" style="background:#e8f5e9;">📦 託運 23kg</div>
                 </div>
             </div>
         </div>
         
-        <div class="card">
-            <div class="sticker-label" style="background: var(--pink);">PASSENGER: ADA</div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
-                <div><div style="font-size: 10px; opacity: 0.6;">FROM</div><div style="font-size: 20px; font-weight: 900;">TPE</div></div>
-                <div style="font-size: 20px;">🌸</div>
-                <div style="text-align: right;"><div style="font-size: 10px; opacity: 0.6;">TO</div><div style="font-size: 20px; font-weight: 900;">BKK</div></div>
+        <div class="card mini-ticket" style="border-left: 6px solid var(--pink);">
+            <div class="sticker-label" style="background: var(--pink);">ADA</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
+                <div><span style="font-size: 9px; opacity: 0.6;">TPE</span> <b style="font-size: 16px;">13:25</b></div>
+                <div style="font-size: 14px;">✈️</div>
+                <div><span style="font-size: 9px; opacity: 0.6;">BKK</span> <b style="font-size: 16px;">16:10</b></div>
             </div>
             <div class="ticket-cutout">
-                <div style="font-size: 13px; font-weight: 900; color: var(--coral);">去程航班</div>
-                <div style="font-size: 12px; font-weight: 700; opacity: 0.8; margin-top: 4px;">
-                    🛫 Takeoff (台北起飛)：01:25 PM (13:25)<br>
-                    🛬 Landing (曼谷抵達)：04:10 PM (16:10)
-                </div>
+                <div style="font-size: 11px; font-weight: 900; color: var(--coral);">去程航班</div>
             </div>
         </div>
 
-        <h3 style="margin-top:25px; font-weight:900; color:var(--black);">🛬 回程航班 (5/7)</h3>
+        <h3 style="margin-top:15px; font-weight:900; color:var(--black); font-size:16px;">🛬 回程航班 (5/7)</h3>
 
-        <div class="card">
-            <div class="sticker-label" style="background: var(--pink);">PASSENGER: ADA</div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
-                <div><div style="font-size: 10px; opacity: 0.6;">FROM</div><div style="font-size: 20px; font-weight: 900;">BKK</div></div>
-                <div style="font-size: 20px;">🇹🇭</div>
-                <div style="text-align: right;"><div style="font-size: 10px; opacity: 0.6;">TO</div><div style="font-size: 20px; font-weight: 900;">TPE</div></div>
+        <div class="card mini-ticket" style="border-left: 6px solid var(--pink);">
+            <div class="sticker-label" style="background: var(--pink);">ADA</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
+                <div><span style="font-size: 9px; opacity: 0.6;">BKK</span> <b style="font-size: 16px;">17:50</b></div>
+                <div style="font-size: 14px;">✈️</div>
+                <div><span style="font-size: 9px; opacity: 0.6;">TPE</span> --</div>
             </div>
             <div class="ticket-cutout">
-                <div style="font-size: 13px; font-weight: 900; color: var(--green);">回程航班</div>
-                <div style="font-size: 12px; font-weight: 700; opacity: 0.8; margin-top: 4px;">
-                    ⏰ Takeoff (曼谷起飛)：05:50 PM (17:50)
-                </div>
+                <div style="font-size: 11px; font-weight: 900; color: var(--green);">回程航班</div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="sticker-label" style="background: var(--blue); color: white;">PASSENGERS: Cindy & LING</div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
-                <div><div style="font-size: 10px; opacity: 0.6;">FROM</div><div style="font-size: 20px; font-weight: 900;">BKK</div></div>
-                <div style="font-size: 20px;">🇹🇭</div>
-                <div style="text-align: right;"><div style="font-size: 10px; opacity: 0.6;">TO</div><div style="font-size: 20px; font-weight: 900;">HKG</div></div>
+        <div class="card mini-ticket" style="border-left: 6px solid var(--blue);">
+            <div class="sticker-label" style="background: var(--blue); color: white;">Cindy & LING</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
+                <div><div style="display:inline; font-size: 9px; opacity: 0.6;">BKK</div> <b style="font-size: 16px;">18:10</b></div>
+                <div style="font-size: 14px;">✈️</div>
+                <div><div style="display:inline; font-size: 9px; opacity: 0.6;">HKG</div> <b style="font-size: 16px;">22:00</b></div>
             </div>
             <div class="ticket-cutout">
-                <div style="font-size: 13px; font-weight: 900; color: var(--green);">航空：泰國航空 TG 602</div>
-                <div style="font-size: 12px; font-weight: 700; opacity: 0.8; margin-top: 4px;">
-                    ⏰ Takeoff (曼谷起飛)：06:10 PM (18:10)<br>
-                    🛬 Landing (香港抵達)：10:00 PM (22:00)
-                </div>
+                <div style="font-size: 11px; font-weight: 900; color: var(--green);">泰國航空 TG 602</div>
                 <div class="baggage-badge-box">
-                    <div class="bag-badge" style="color:var(--coral)">👜 隨身包 1kg</div>
+                    <div class="bag-badge" style="color:var(--coral)">👜 隨身 1kg</div>
                     <div class="bag-badge">🧳 手提 7kg</div>
                     <div class="bag-badge" style="background:#e8f5e9;">📦 託運 23kg</div>
                 </div>
+            </div>
+        </div>
+
+        <h3 style="margin-top:20px; font-weight:900; color:var(--black); font-size:16px;">🏨 下榻飯店</h3>
+        <div class="card" style="border-left: 6px solid var(--green);">
+            <div class="sticker-label" style="background: var(--green);">BANGKOK STAY</div>
+            <div style="font-size: 18px; font-weight: 900; margin-top: 5px;">INNSiDE by Meliá Bangkok Sukhumvit</div>
+            <div style="font-size: 12px; font-weight: 700; opacity: 0.7; margin-top: 6px; line-height: 1.5;">
+                📍 飯店位置極佳，頂樓高空泳池與空中酒吧風景絕美，記得帶網美華服去拍照 🍸👙
+            </div>
+            <div>
+                <a href="https://maps.app.goo.gl/9DqL6EwUfE34GZ9n7" target="_blank" class="map-btn">
+                    🗺️ 在 Google Maps 開啟地圖
+                </a>
             </div>
         </div>
     </div>
@@ -406,16 +435,16 @@
             el.innerHTML = keys.map(key => {
                 const p = data[key];
                 return `
-                    <div style="padding:15px 0; border-bottom:2px dashed #eee;">
+                    <div style="padding:12px 0; border-bottom:2px dashed #eee;">
                         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                             <div>
-                                <span style="font-weight:900; font-size:16px;">🍭 ${p.desc}</span>
-                                <div style="font-size:12px; font-weight:700; opacity:0.7; margin-top:4px;">
+                                <span style="font-weight:900; font-size:15px;">🍭 ${p.desc}</span>
+                                <div style="font-size:11px; font-weight:700; opacity:0.7; margin-top:3px;">
                                     ${p.payer} 買單 ➔ 每人 ${p.per}฿
                                 </div>
                             </div>
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <span style="color:var(--coral); font-weight:900; font-size:18px;">${p.amount}฿</span>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="color:var(--coral); font-weight:900; font-size:16px;">${p.amount}฿</span>
                                 <button class="delete-btn" onclick="deletePayment('${key}')">🗑️</button>
                             </div>
                         </div>
@@ -536,14 +565,13 @@
                 document.getElementById('forecast-list').innerHTML = fData.list.filter(i => i.dt_txt.includes("12:00:00")).map(d => {
                     const emoji = getWeatherEmoji(d.weather[0].id);
                     const targetDate = new Date(d.dt * 1000);
-                    // 格式化日期為 "MM/DD (週X)"
                     const dateStr = `${targetDate.getMonth() + 1}/${targetDate.getDate()}`;
                     const weekdayStr = targetDate.toLocaleDateString('zh-HK', { weekday: 'short' });
                     
                     return `
                         <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; font-weight:900; border-bottom: 1px dashed #eee;">
                             <span>✨ ${dateStr} (${weekdayStr})</span>
-                            <span style="color:var(--pink); font-size: 18px;">${emoji} ${Math.round(d.main.temp)}°C</span>
+                            <span style="color:var(--pink); font-size: 16px;">${emoji} ${Math.round(d.main.temp)}°C</span>
                         </div>`;
                 }).join('');
             } catch(e) {}
