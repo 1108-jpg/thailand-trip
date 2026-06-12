@@ -103,7 +103,7 @@
             box-sizing: border-box;
         }
 
-        /* Neobrutalism 3D 電子琴鍵按鈕 */
+        /* Neobrutalism 3D 檔案夾式梯形紙頁籤 */
         .nav-item { 
             border: 2px solid var(--black); 
             background: var(--white); 
@@ -121,19 +121,22 @@
             gap: 4px;
             box-sizing: border-box;
             user-select: none;
+            /* 3D 梯形視覺投影 (上窄下寬) */
+            transform: perspective(30px) rotateX(12deg);
+            transform-origin: bottom;
         }
         .nav-item span { font-size: 16px; }
 
-        /* 點擊及啟用狀態：模擬實體鍵凹陷 */
+        /* 點擊及啟用狀態：模擬實體活頁紙卡凹陷 */
         .nav-item.active { 
             color: var(--white); 
             background: linear-gradient(135deg, #ff9ff3 0%, #ff6b6b 50%, #feca57 100%);
             text-shadow: 1px 1px 0px var(--black), -0.5px -0.5px 0px var(--black), 0.5px -0.5px 0px var(--black), -0.5px 0.5px 0px var(--black);
             box-shadow: 0.5px 0.5px 0px var(--black);
-            transform: translate(2px, 2px);
+            transform: perspective(30px) rotateX(12deg) translate(2px, 2px);
         }
         .nav-item:active {
-            transform: translate(2px, 2px);
+            transform: perspective(30px) rotateX(12deg) translate(2px, 2px);
             box-shadow: 0.5px 0.5px 0px var(--black);
         }
 
@@ -349,7 +352,7 @@
 </head>
 <body>
 
-    <!-- 100% 規定：客製化對話框 DOM 結構 -->
+    <!-- 自訂 Modal 對話框 -->
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title" id="modal-title-text">✨ 系統通知</div>
@@ -361,7 +364,7 @@
     <!-- 烤吐司訊息中心 -->
     <div id="toast-container" class="toast-container"></div>
 
-    <!-- 頂部固定綜合導航區塊 (2x3 電玩控制板，零滑動、好直覺) -->
+    <!-- 頂部固定綜合導航區塊 (2x3 電玩控制板，帶有檔案夾活頁紙卡 3D 梯形頁籤) -->
     <div class="top-header-container">
         <div class="app-banner">✨ THAI ADVENTURE 🌸</div>
         <nav class="nav-bar">
@@ -730,7 +733,7 @@
             const desc = document.getElementById('pay-desc').value;
             const amount = parseFloat(document.getElementById('pay-amount').value);
             const payer = document.getElementById('payer').value;
-            if (!desc || !amount) return showCustomAlert("請填寫金額和說明喔！");
+            if (!desc || !amount) return showCustomAlert("請填寫金額 and 說明喔！");
             const per = Math.round(amount / 3);
             push(window.dbRefs.payments, { desc, amount, payer, per });
             document.getElementById('pay-desc').value = '';
@@ -941,7 +944,6 @@
 
         function copyAddress(id) {
             const text = document.getElementById(id).innerText;
-            // 由於 iframe 剪貼簿限制，此段在沙盒可能回退到手動複製
             navigator.clipboard.writeText(text).then(() => {
                 showToast("📋 地址已完美複製！");
             }).catch(() => {
@@ -995,9 +997,10 @@
                 createBurst(e);
             }
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
             
+            // 標註對應按鈕為 active
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             const buttons = document.querySelectorAll('.nav-item');
             buttons.forEach(btn => {
                 if(btn.getAttribute('onclick').includes(pageId)) { btn.classList.add('active'); }
