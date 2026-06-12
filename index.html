@@ -76,18 +76,22 @@
             box-sizing: border-box;
         }
 
-        /* 標頭 Banner 樣式 */
+        /* 升級版：熱帶漸層霓虹 Banner */
         .app-banner {
-            height: 50px;
-            border-bottom: 2px dashed var(--black);
+            height: 52px;
+            border-bottom: 3px solid var(--black);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 19px;
             font-weight: 900;
-            letter-spacing: 1px;
-            text-shadow: 2px 2px 0px var(--pink);
-            background: #fff;
+            letter-spacing: 2px;
+            color: var(--white);
+            /* 使用泰國酸辣多汁的熱帶繽紛漸層 */
+            background: linear-gradient(135deg, #ff9ff3 0%, #ff6b6b 50%, #feca57 100%);
+            /* Y2K 風格的雙重黑邊立體字體陰影 */
+            text-shadow: 2px 2px 0px var(--black), -1px -1px 0px var(--black), 1px -1px 0px var(--black), -1px 1px 0px var(--black);
+            box-shadow: inset 0 -2px 0px rgba(0,0,0,0.1);
         }
 
         /* 頂部 Excel 風格頁籤列 */
@@ -125,7 +129,7 @@
         /* 頁面容器 */
         .page { 
             display: none; 
-            padding: 130px 20px 25px 20px; 
+            padding: 132px 20px 25px 20px; 
             animation: popIn 0.3s ease-out; 
         }
         .page.active { display: block; }
