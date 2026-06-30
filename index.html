@@ -349,6 +349,54 @@
             100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2) rotate(var(--rot)); opacity: 0; }
         }
     </style>
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // 1. 初始化
+    const firebaseConfig = { /* ... 保持你原本的配置 ... */ };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.dbRefs = { payments: ref(db, 'trip_payments') };
+
+    // 2. 固定匯率
+    const FIXED_RATE = 4.5;
+
+    // 3. 暴露函數到全域 (關鍵：這樣 HTML 的 onclick 才能執行)
+    window.addPayment = function() {
+        const item = document.getElementById('pay-item').value;
+        const amount = parseFloat(document.getElementById('pay-amount').value);
+        const currency = document.getElementById('pay-currency').value;
+        const payer = document.getElementById('pay-payer').value;
+
+        if (!item || isNaN(amount)) { alert("請檢查輸入項目！"); return; }
+
+        const finalAmount = (currency === 'HKD') ? (amount * FIXED_RATE) : amount;
+
+        push(window.dbRefs.payments, { item, amount: finalAmount, payer, timestamp: Date.now() });
+        document.getElementById('pay-item').value = '';
+        document.getElementById('pay-amount').value = '';
+    };
+
+    // 4. 即時監聽數據
+    onValue(window.dbRefs.payments, (snapshot) => {
+        const data = snapshot.val() || {};
+        const totals = { "Cindy": 0, "Ling": 0, "Ada": 0 };
+        let total = 0;
+        Object.values(data).forEach(p => { 
+            totals[p.payer] = (totals[p.payer] || 0) + p.amount;
+            total += p.amount;
+        });
+        
+        const results = document.getElementById('finance-results');
+        if (results) {
+            results.innerHTML = `<div>總額: ${total.toFixed(0)} THB</div>
+                                 <div>每人應付: ${(total/3).toFixed(0)} THB</div>
+                                 <hr>
+                                 <p>Cindy: ${totals.Cindy.toFixed(0)} | Ling: ${totals.Ling.toFixed(0)} | Ada: ${totals.Ada.toFixed(0)}</p>`;
+        }
+    });
+</script>
 </head>
 <body>
 
