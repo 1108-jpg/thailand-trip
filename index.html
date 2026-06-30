@@ -964,9 +964,23 @@
 
         async function fetchWeather() {
             try {
+                // 取得當前天氣
                 const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=Bangkok&appid=${apiKey}&units=metric&lang=zh_tw`);
                 const data = await res.json();
-                document.getElementById('mini-weather-display').innerHTML = `${getWeatherEmoji(data.weather[0].id)} ${Math.round(data.main.temp)}°C (${data.weather[0].description})`;
+                
+                // 取得未來天氣預報
+                const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Bangkok&appid=${apiKey}&units=metric&lang=zh_tw`);
+                const forecastData = await forecastRes.json();
+                
+                // 當前天氣顯示
+                const currentStr = `${getWeatherEmoji(data.weather[0].id)} ${Math.round(data.main.temp)}°C`;
+                
+                // 取得明天同一時間的預測 (forecast 資料每 3 小時一筆，+8 即約 24 小時後)
+                const tomorrowData = forecastData.list[8];
+                const tomorrowStr = `明天 ${getWeatherEmoji(tomorrowData.weather[0].id)} ${Math.round(tomorrowData.main.temp)}°C`;
+                
+                document.getElementById('mini-weather-display').innerHTML = 
+                    `<span style="margin-right:8px;">${currentStr}</span> | <span style="margin-left:8px; color:#636e72;">${tomorrowStr}</span>`;
             } catch(e) {
                 document.getElementById('mini-weather-display').innerHTML = `☀️ 曼谷天氣`;
             }
