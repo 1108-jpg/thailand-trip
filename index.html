@@ -4,121 +4,117 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thai 🌸🌿</title>
-    <link rel="apple-touch-icon" href="icon.png">
+    <link class="js-meta-icon" rel="apple-touch-icon" href="icon.png">
     <link rel="icon" type="image/png" href="icon.png">
     <meta name="theme-color" content="#f8d7ff">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
-
     <style>
-        /* 你的原本 CSS 保持不變 */
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;900&display=swap');
-        :root { --pink: #ff9ff3; --yellow: #feca57; --blue: #48dbfb; --green: #1dd1a1; --coral: #ff6b6b; --black: #2d3436; --bg-purple: #f8d7ff; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg-purple); margin: 0; padding-bottom: 60px; }
-        .page { display: none; padding: 120px 20px 25px 20px; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght=700;900&family=Plus+Jakarta+Sans:wght=700;800&display=swap');
+
+        :root { 
+            --pink: #ff9ff3;
+            --yellow: #feca57;
+            --blue: #48dbfb;
+            --green: #1dd1a1;
+            --coral: #ff6b6b;
+            --black: #2d3436;
+            --white: #ffffff;
+            --bg-purple: #f8d7ff;
+        }
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif; 
+            background: var(--bg-purple);
+            color: var(--black);
+            margin: 0; 
+            padding-bottom: 40px; 
+            background-image: radial-gradient(var(--pink) 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部固定綜合導航區塊 */
+        .top-header-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: var(--white);
+            border-bottom: 4px solid var(--black);
+            z-index: 2000;
+            box-shadow: 0 6px 0px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+        }
+
+        /* 熱帶漸層霓虹 Banner */
+        .app-banner {
+            height: 48px;
+            border-bottom: 3px solid var(--black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: var(--white);
+            background: linear-gradient(135deg, #ff9ff3 0%, #ff6b6b 50%, #feca57 100%);
+            text-shadow: 2px 2px 0px var(--black), -1px -1px 0px var(--black), 1px -1px 0px var(--black), -1px 1px 0px var(--black);
+            box-shadow: inset 0 -2px 0px rgba(0,0,0,0.1);
+        }
+
+        /* 檔案夾風格單排 4 欄控制板 */
+        .nav-bar { 
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            padding: 8px 8px;
+            background: #fafafa;
+            box-sizing: border-box;
+        }
+
+        /* Neobrutalism 3D 檔案夾式梯形紙頁籤 */
+        .nav-item { 
+            border: 2px solid var(--black); 
+            background: var(--white); 
+            color: var(--black); 
+            font-size: 11px; 
+            font-weight: 900; 
+            height: 38px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.08s ease;
+            box-shadow: 2.5px 2.5px 0px var(--black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            box-sizing: border-box;
+            user-select: none;
+            transform: perspective(30px) rotateX(12deg);
+            transform-origin: bottom;
+        }
+        .nav-item span { font-size: 16px; }
+
+        /* 點擊及啟用狀態 */
+        .nav-item.active { 
+            color: var(--white); 
+            background: linear-gradient(135deg, #ff9ff3 0%, #ff6b6b 50%, #feca57 100%);
+            text-shadow: 1px 1px 0px var(--black), -0.5px -0.5px 0px var(--black), 0.5px -0.5px 0px var(--black), -0.5px 0.5px 0px var(--black);
+            box-shadow: 0.5px 0.5px 0px var(--black);
+            transform: perspective(30px) rotateX(12deg) translate(2px, 2px);
+        }
+        .nav-item:active {
+            transform: perspective(30px) rotateX(12deg) translate(2px, 2px);
+            box-shadow: 0.5px 0.5px 0px var(--black);
+        }
+
+        /* 頁面容器 */
+        .page { 
+            display: none; 
+            padding: 140px 20px 25px 20px; 
+            animation: popIn 0.3s ease-out; 
+        }
         .page.active { display: block; }
-        .card { background: #fff; border: 3px solid var(--black); border-radius: 16px; padding: 16px; margin: 12px 0; }
-        .nav-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px; background: #fff; border-bottom: 4px solid var(--black); position: fixed; top: 48px; width: 100%; box-sizing: border-box; z-index: 1000; }
-        .nav-item { border: 2px solid var(--black); background: #fff; cursor: pointer; padding: 8px; border-radius: 8px; font-weight: 900; }
-        .nav-item.active { background: var(--yellow); }
-        .add-btn { background: var(--green); border: 3px solid var(--black); width: 100%; padding: 12px; border-radius: 50px; font-weight: 900; cursor: pointer; }
-        input, select { width: 100%; padding: 10px; margin: 5px 0; border: 2px solid var(--black); border-radius: 8px; box-sizing: border-box; }
-    </style>
-</head>
-<body>
-
-    <div class="top-header-container" style="position:fixed; top:0; width:100%; z-index:2000;">
-        <div class="app-banner" style="background:var(--pink); text-align:center; padding:10px; font-weight:900;">✨ THAI ADVENTURE 🌸</div>
-        <nav class="nav-bar">
-            <button class="nav-item" onclick="showPage('flights')">✈️ 航班</button>
-            <button class="nav-item" onclick="showPage('itinerary')">🗺️ 行程</button>
-            <button class="nav-item" onclick="showPage('checklist')">✅ 檢查</button>
-            <button class="nav-item active" onclick="showPage('finance')">💰 分帳</button>
-        </nav>
-    </div>
-
-    <div id="finance" class="page active">
-        <h1>💰 分帳系統</h1>
-        <div class="card">
-            <input type="text" id="pay-item" placeholder="項目名稱">
-            <input type="number" id="pay-amount" placeholder="金額">
-            <select id="pay-currency">
-                <option value="THB">泰銖 (THB)</option>
-                <option value="HKD">港幣 (HKD)</option>
-            </select>
-            <select id="pay-payer">
-                <option value="Cindy">Cindy</option>
-                <option value="Ling">Ling</option>
-                <option value="Ada">Ada</option>
-            </select>
-            <button class="add-btn" onclick="addPayment()">新增記錄</button>
-        </div>
-        <div id="finance-results" class="card">
-            <h3>📊 結算總額</h3>
-            <div id="results-content">讀取中...</div>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAGCx9d4q4dMdSMMAQBJbskdyjcpkit_EM",
-            authDomain: "thai-trip-b0715.firebaseapp.com",
-            databaseURL: "https://thai-trip-b0715-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "thai-trip-b0715",
-            storageBucket: "thai-trip-b0715.firebasestorage.app",
-            messagingSenderId: "924311551991",
-            appId: "1:924311551991:web:22a06d3fdc67f5807278f2"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const paymentsRef = ref(db, 'trip_payments');
-        const FIXED_RATE = 4.5;
-
-        // 全域函數：新增支付
-        window.addPayment = function() {
-            const item = document.getElementById('pay-item').value;
-            const amount = parseFloat(document.getElementById('pay-amount').value);
-            const currency = document.getElementById('pay-currency').value;
-            const payer = document.getElementById('pay-payer').value;
-
-            if (!item || isNaN(amount)) { alert("請填寫資料！"); return; }
-            
-            const finalAmount = (currency === 'HKD') ? (amount * FIXED_RATE) : amount;
-
-            push(paymentsRef, { item, amount: finalAmount, payer, timestamp: Date.now() });
-            document.getElementById('pay-item').value = '';
-            document.getElementById('pay-amount').value = '';
-        };
-
-        // 監聽更新
-        onValue(paymentsRef, (snapshot) => {
-            const data = snapshot.val() || {};
-            const totals = { "Cindy": 0, "Ling": 0, "Ada": 0 };
-            let total = 0;
-            Object.values(data).forEach(p => {
-                totals[p.payer] += p.amount;
-                total += p.amount;
-            });
-            document.getElementById('results-content').innerHTML = `
-                <p>總開銷: <b>${total.toFixed(0)} THB</b></p>
-                <p>每人應付: <b>${(total/3).toFixed(0)} THB</b></p>
-                <hr>
-                <p>Cindy 已付: ${totals.Cindy.toFixed(0)}</p>
-                <p>Ling 已付: ${totals.Ling.toFixed(0)}</p>
-                <p>Ada 已付: ${totals.Ada.toFixed(0)}</p>
-            `;
-        });
-
-        // 頁面切換邏輯
-        window.showPage = function(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-        };
-    </script>
-</body>
-</html>
+        @keyframes popIn { from { transform: translateY(
