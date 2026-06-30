@@ -638,11 +638,43 @@
         </div>
     </div>
 
+    <div id="finance" class="page">
+        <h1>💸 即時分帳與匯率</h1>
+        
+        <div class="card">
+            <input type="text" id="pay-item" placeholder="項目名稱 (如: 晚餐、車資)">
+            <input type="number" id="pay-amount" placeholder="金額">
+            <select id="pay-currency">
+                <option value="THB">泰銖 (THB)</option>
+                <option value="HKD">港幣 (HKD)</option>
+            </select>
+            <select id="pay-payer">
+                <option value="Cindy">Cindy</option>
+                <option value="Ling">Ling</option>
+                <option value="Ada">Ada</option>
+            </select>
+            <button class="add-btn" onclick="addPayment()">新增記錄</button>
+        </div>
+
+        <div class="card">
+            <h3>📊 結算總額 (固定換算為 THB)</h3>
+            <div id="finance-results" style="font-weight: 700; line-height: 1.8;">
+                正在即時連線資料庫讀取中...
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📜 歷史消費明細</h3>
+            <div id="pay-records" style="max-height: 300px; overflow-y: auto;">
+                暫無明細紀錄 🍹
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 1. 初始化 Firebase 
         const firebaseConfig = {
             apiKey: "AIzaSyAGCx9d4q4dMdSMMAQBJbskdyjcpkit_EM",
             authDomain: "thai-trip-b0715.firebaseapp.com",
@@ -656,11 +688,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const paymentsRef = ref(db, 'trip_payments');
-        const FIXED_RATE = 4.5; // HKD 轉 THB 匯率
+        const FIXED_RATE = 4.5; 
 
-        // 2. 新增帳單記錄 (綁定 HTML 中的 ID，並做全自動相容處理)
+        // 2. 新增帳單記錄 (全自動欄位安全相容)
         window.addPayment = function() {
-            // 自動適應不同的 input ID 命名
             const itemInput = document.getElementById('pay-item') || document.getElementById('pay-desc');
             const amountInput = document.getElementById('pay-amount');
             const currencyInput = document.getElementById('pay-currency');
@@ -678,7 +709,6 @@
                 return;
             }
 
-            // 如果選的是港幣，自動乘以匯率換算成泰銖儲存
             const finalAmount = (currency === 'HKD') ? (rawAmount * FIXED_RATE) : rawAmount;
             const perPersonAmount = Math.round(finalAmount / 3);
 
@@ -690,11 +720,9 @@
                 timestamp: Date.now()
             });
 
-            // 清空輸入框
             itemInput.value = '';
             amountInput.value = '';
             
-            // 彈出提示
             if (typeof window.showToast === 'function') {
                 window.showToast("💰 共同小帳本已即時同步！");
             } else {
@@ -718,16 +746,15 @@
             }
         };
 
-        // 4. 即時監聽與數據計算渲染
+        // 4. 即時監聽渲染
         onValue(paymentsRef, (snapshot) => {
             const data = snapshot.val() || {};
             
-            // ─── A. 計算分帳總額與應收應付 ───
+            // 計算結算
             const totals = { "Cindy": 0, "Ling": 0, "Ada": 0 };
             let totalAmount = 0;
 
             Object.values(data).forEach(p => {
-                // 相容舊資料格式（有些欄位名稱可能是 item 或是 desc）
                 const payerName = p.payer;
                 const payAmount = p.amount || 0;
                 if (totals[payerName] !== undefined) {
@@ -775,10 +802,10 @@
                 `;
             }
 
-            // ─── B. 渲染下方歷史明細面板 ───
+            // 渲染明細歷史
             const recordsDiv = document.getElementById('pay-records');
             if (recordsDiv) {
-                const keys = Object.keys(data).reverse(); // 最新時間排在最上面
+                const keys = Object.keys(data).reverse(); 
                 if (keys.length === 0) {
                     recordsDiv.innerHTML = '<div style="text-align:center; opacity:0.5; padding:20px;">目前還沒有帳單喔 🍹</div>';
                     return;
@@ -797,7 +824,7 @@
                                 </div>
                                 <div style="display:flex; align-items:center; gap:8px;">
                                     <span style="color:var(--coral); font-weight:900; font-size:16px;">${p.amount}฿</span>
-                                    <button class="delete-btn" style="background:none; border:none; cursor:pointer;" onclick="deletePayment('${key}')">🗑️</button>
+                                    <button style="background:none; border:none; cursor:pointer; font-size:14px;" onclick="deletePayment('${key}')">🗑️</button>
                                 </div>
                             </div>
                         </div>`;
