@@ -724,6 +724,61 @@
                     </div>`;
             }).join('');
         }
+       // ... 現有的初始化代碼下方 ...
+
+const FIXED_RATE = 4.5; // 你可以隨時修改這個匯率
+
+// 新增記錄函數
+window.addPayment = async function() {
+    const item = document.getElementById('pay-item').value;
+    const amountInput = parseFloat(document.getElementById('pay-amount').value);
+    const currency = document.getElementById('pay-currency').value;
+    const payer = document.getElementById('pay-payer').value;
+
+    if (!item || isNaN(amountInput)) {
+        alert("請輸入項目名稱與正確金額！");
+        return;
+    }
+
+    const finalAmount = (currency === 'HKD') ? (amountInput * FIXED_RATE) : amountInput;
+
+    push(window.dbRefs.payments, {
+        item, 
+        amount: parseFloat(finalAmount.toFixed(2)), 
+        payer, 
+        timestamp: Date.now() 
+    });
+
+    document.getElementById('pay-item').value = '';
+    document.getElementById('pay-amount').value = '';
+};
+
+// 監聽並自動結算
+onValue(window.dbRefs.payments, (snapshot) => {
+    const data = snapshot.val() || {};
+    const totals = { "Cindy": 0, "Ling": 0, "Ada": 0 };
+    let totalAmount = 0;
+
+    Object.values(data).forEach(p => {
+        totals[p.payer] += p.amount;
+        totalAmount += p.amount;
+    });
+
+    const perPerson = totalAmount / 3;
+
+    const resultsDiv = document.getElementById('finance-results');
+    resultsDiv.innerHTML = `
+        <div style="font-size: 14px; font-weight: 700;">
+            <p>總消費: <b>${totalAmount.toFixed(0)} THB</b></p>
+            <p>每人應付: <b>${perPerson.toFixed(0)} THB</b></p>
+            <div style="border-top: 2px dashed #ccc; margin: 10px 0; padding-top: 10px;">
+                <p>Cindy 已付: ${totals.Cindy.toFixed(0)}</p>
+                <p>Ling 已付: ${totals.Ling.toFixed(0)}</p>
+                <p>Ada 已付: ${totals.Ada.toFixed(0)}</p>
+            </div>
+        </div>
+    `;
+});
     </script>
 
     <script>
