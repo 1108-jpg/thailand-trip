@@ -105,16 +105,334 @@
             box-shadow: 0.5px 0.5px 0px var(--black);
             transform: perspective(30px) rotateX(12deg) translate(2px, 2px);
         }
-        .nav-item:active {
-            transform: perspective(30px) rotateX(12deg) translate(2px, 2px);
-            box-shadow: 0.5px 0.5px 0px var(--black);
-        }
 
-        /* 頁面容器 */
+        /* 頁面容器 (核心修正：確保 active 具有最高優先權顯示出來) */
         .page { 
-            display: none; 
+            display: none !important; 
             padding: 140px 20px 25px 20px; 
             animation: popIn 0.3s ease-out; 
         }
-        .page.active { display: block; }
-        @keyframes popIn { from { transform: translateY(
+        .page.active { 
+            display: block !important; 
+        }
+        @keyframes popIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        h1 { 
+            font-size: 24px; font-weight: 900; color: var(--black);
+            text-shadow: 2px 2px 0px var(--white), 3px 3px 0px var(--blue);
+            margin-bottom: 15px; text-align: center;
+            margin-top: 5px;
+        }
+
+        .card { 
+            background: var(--white); 
+            border: 3px solid var(--black);
+            border-radius: 16px;
+            padding: 16px; 
+            margin: 12px 0; 
+            position: relative;
+        }
+
+        .card.clickable-accordion {
+            cursor: pointer;
+            box-shadow: 5px 5px 0px var(--black);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        
+        .accordion-header { display: flex; justify-content: space-between; align-items: center; user-select: none; }
+        .accordion-header-left { display: flex; align-items: center; gap: 10px; }
+        .accordion-title { font-weight: 900; font-size: 15px; }
+        .accordion-arrow { font-size: 12px; transition: transform 0.2s; font-weight: 900; }
+        .accordion-content { display: none; margin-top: 12px; padding-top: 12px; border-top: 2px dashed #eee; }
+        
+        .card.expanded .accordion-arrow { transform: rotate(180deg); }
+        .card.expanded .accordion-content { display: block; }
+
+        .iti-timeline-item { margin-bottom: 12px; padding-left: 10px; border-left: 3px solid var(--pink); font-size: 13px; line-height: 1.5; font-weight: 700; }
+        .iti-time { font-weight: 900; color: var(--coral); font-size: 12px; background: #fff5f5; padding: 1px 5px; border-radius: 4px; border: 1px solid var(--coral); display: inline-block; margin-bottom: 2px; }
+        .iti-link { color: #0984e3; text-decoration: underline; font-weight: 900; }
+
+        .mini-ticket { padding: 12px; margin: 8px 0; border-radius: 12px; border-width: 2px; }
+        .mini-ticket .ticket-cutout { margin-top: 8px; padding-top: 8px; border-top: 2px dashed var(--black); }
+
+        .sticker-label {
+            display: inline-block; background: var(--yellow); border: 2px solid var(--black);
+            padding: 3px 10px; border-radius: 50px; font-size: 11px; font-weight: 900;
+            box-shadow: 1.5px 1.5px 0px var(--black); flex-shrink: 0;
+        }
+
+        .add-btn { 
+            background: var(--green); color: var(--black); border: 3px solid var(--black); 
+            width: 100%; padding: 12px; border-radius: 50px; font-weight: 900; font-size: 16px;
+            box-shadow: 3px 3px 0px var(--black); cursor: pointer; transition: 0.1s;
+        }
+
+        input, select { 
+            width: 100%; padding: 12px; margin: 10px 0; background: #fff; 
+            border: 3px solid var(--black); border-radius: 12px; 
+            font-family: inherit; font-weight: 700; box-sizing: border-box;
+        }
+        
+        .todo-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 2px dashed #eee; cursor: pointer; }
+        .todo-checkbox { width: 22px; height: 22px; border: 2px solid var(--black); border-radius: 6px; margin-right: 12px; display: flex; align-items: center; justify-content: center; background: white; flex-shrink: 0; }
+        .todo-item.checked .todo-checkbox { background: var(--green); }
+        .todo-text { font-weight: 700; font-size: 14px; }
+        .todo-item.checked .todo-text { text-decoration: line-through; opacity: 0.5; }
+
+        .baggage-badge-box { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .bag-badge { background: #fffde7; border: 2px solid var(--black); border-radius: 10px; padding: 4px 8px; font-size: 10px; font-weight: 900; display: flex; align-items: center; gap: 3px; box-shadow: 1.5px 1.5px 0px var(--black); }
+    </style>
+</head>
+<body>
+
+    <div class="top-header-container">
+        <div class="app-banner">✨ THAI ADVENTURE 🌸</div>
+        <div id="mini-weather-strip" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 4px; background: #fffde7; border-bottom: 2px solid var(--black); font-size: 12px; font-weight: 900;">
+            <div id="mini-weather-display">☀️ 曼谷：熱情陽光奔放中...</div>
+        </div>
+        <nav class="nav-bar">
+            <button id="btn-flights" class="nav-item active" onclick="showPage('flights')"><span>✈️</span>航班</button>
+            <button id="btn-itinerary" class="nav-item" onclick="showPage('itinerary')"><span>🗺️</span>行程</button>
+            <button id="btn-checklist" class="nav-item" onclick="showPage('checklist')"><span>✅</span>檢查</button>
+            <button id="btn-finance" class="nav-item" onclick="showPage('finance')"><span>💰</span>分帳</button>
+        </nav>
+    </div>
+
+    <div id="flights" class="page active">
+        <h1>✈️ 航班與住宿</h1>
+        <div class="card" style="background: var(--yellow); text-align: center; padding: 12px;">
+            <div style="font-size: 13px; font-weight: 900; margin-bottom: 3px;">距離 1/7 泰國大冒險還有</div>
+            <div id="countdown" style="font-size: 22px; font-weight: 900; text-shadow: 1.5px 1.5px 0 var(--white);">準備出發囉！🎉</div>
+        </div>
+
+        <div class="card clickable-accordion" onclick="toggleAccordion(this)">
+            <div class="accordion-header">
+                <div class="accordion-header-left"><div class="sticker-label">1/7</div><div class="accordion-title">🛫 去程</div></div>
+                <div class="accordion-arrow">▼</div>
+            </div>
+            <div class="accordion-content" onclick="event.stopPropagation();">
+                <div class="card mini-ticket" style="border-left: 6px solid var(--blue);">
+                    <div class="sticker-label" style="background: var(--blue); color: white;">Cindy & LING</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
+                        <div><span style="font-size: 9px; opacity: 0.6;">HKG</span> <b style="font-size: 16px;">07:40</b></div>
+                        <div style="font-size: 14px;">✈️</div>
+                        <div><span style="font-size: 9px; opacity: 0.6;">BKK</span> <b style="font-size: 16px;">09:35</b></div>
+                    </div>
+                    <div class="ticket-cutout">
+                        <div style="font-size: 11px; font-weight: 900; color: var(--coral);">聯合航空 UA 820</div>
+                        <div class="baggage-badge-box">
+                            <div class="bag-badge">👜 隨身包</div>
+                            <div class="bag-badge">🧳 手提</div>
+                            <div class="bag-badge" style="background:#e8f5e9;">📦 託運 23kg</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card mini-ticket" style="border-left: 6px solid var(--pink);">
+                    <div class="sticker-label" style="background: var(--pink);">ADA</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
+                        <div><span style="font-size: 9px; opacity: 0.6;">TPE</span> <b style="font-size: 16px;">13:25</b></div>
+                        <div style="font-size: 14px;">✈️</div>
+                        <div><span style="font-size: 9px; opacity: 0.6;">BKK</span> <b style="font-size: 16px;">16:10</b></div>
+                    </div>
+                    <div class="ticket-cutout"><div style="font-size: 11px; font-weight: 900; color: var(--coral);">長榮航空 BR 211</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card clickable-accordion" onclick="toggleAccordion(this)">
+            <div class="accordion-header">
+                <div class="accordion-header-left"><div class="sticker-label" style="background:var(--pink)">5/7</div><div class="accordion-title">🛬 回程</div></div>
+                <div class="accordion-arrow">▼</div>
+            </div>
+            <div class="accordion-content" onclick="event.stopPropagation();">
+                <div class="card mini-ticket" style="border-left: 6px solid var(--pink);">
+                    <div class="sticker-label" style="background: var(--pink);">ADA</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
+                        <div><span style="font-size: 9px; opacity: 0.6;">BKK</span> <b style="font-size: 16px;">17:50</b></div>
+                        <div style="font-size: 14px;">✈️</div>
+                        <div><span style="font-size: 9px; opacity: 0.6;">TPE</span> <b style="font-size: 16px;">22:45</b></div>
+                    </div>
+                    <div class="ticket-cutout"><div style="font-size: 11px; font-weight: 900; color: var(--green);">長榮航空 BR 212</div></div>
+                </div>
+                <div class="card mini-ticket" style="border-left: 6px solid var(--blue);">
+                    <div class="sticker-label" style="background: var(--blue); color: white;">Cindy & LING</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
+                        <div><span style="font-size: 9px; opacity: 0.6;">BKK</span> <b style="font-size: 16px;">18:10</b></div>
+                        <div style="font-size: 14px;">✈️</div>
+                        <div><span style="font-size: 9px; opacity: 0.6;">HKG</span> <b style="font-size: 16px;">22:00</b></div>
+                    </div>
+                    <div class="ticket-cutout">
+                        <div style="font-size: 11px; font-weight: 900; color: var(--green);">泰國航空 TG 602</div>
+                        <div class="baggage-badge-box">
+                            <div class="bag-badge">👜 隨身包</div>
+                            <div class="bag-badge">🧳 手提 7kg</div>
+                            <div class="bag-badge" style="background:#e8f5e9;">📦 託運 23kg</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="margin-top:20px; font-weight:900; font-size:16px;">🏨 下榻飯店</h3>
+        <div class="card" style="border-left: 6px solid var(--green);">
+            <div class="sticker-label" style="background: var(--green);">BANGKOK STAY</div>
+            <div style="font-size: 18px; font-weight: 900; margin-top: 5px;">INNSiDE by Meliá Bangkok Sukhumvit</div>
+            <div style="margin-top: 10px; font-size: 12px; font-weight: 700; line-height: 1.5;">
+                <b style="color:var(--coral);">🇹🇭 泰文地址：</b><br>
+                <span id="addr-th">โรงแรมอินไซด์ บาย มีเลีย กรุงเทพฯ สุขุมวิท, 1479 ถนนสุขุมวิท, แขวงพระโขนงเหนือ, เขตวัฒนา, กรุงเทพมหานคร 10110</span><br>
+                <button class="copy-btn" onclick="copyText('addr-th')">📋 複製泰文地址</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="itinerary" class="page">
+        <h1>🎒 行程計畫</h1>
+        <div class="card clickable-accordion" onclick="toggleAccordion(this)">
+            <div class="accordion-header">
+                <div class="accordion-header-left"><div class="sticker-label">01/07</div><div class="accordion-title">🥂 抵達與河畔派對</div></div>
+                <div class="accordion-arrow">▼</div>
+            </div>
+            <div class="accordion-content" onclick="event.stopPropagation();">
+                <div class="iti-timeline-item"><span class="iti-time">09:35 AM</span> <b>🛬 抵達 BKK 機場</b><br>叫車前往飯店寄存行李。</div>
+                <div class="iti-timeline-item"><span class="iti-time">02:30 PM</span> <b>🛍️ 逛 EmSphere 商場</b><br>非常新潮好拍的網美潮流地標。</div>
+                <div class="iti-timeline-item"><span class="iti-time">05:30 PM</span> <b>🌅 ICONSIAM Fallabella</b><br>在戶外一邊微醺一邊看漂亮的夕陽河景。</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="checklist" class="page">
+        <h1>✅ 行前檢查清單</h1>
+        <div class="card">
+            <div class="todo-item" onclick="toggleTodo(this)"><div class="todo-checkbox"></div><div class="todo-text">護照與機票 (確認效期 6 個月以上)</div></div>
+            <div class="todo-item" onclick="toggleTodo(this)"><div class="todo-checkbox"></div><div class="todo-text">泰銖現金與海外刷卡信用卡</div></div>
+        </div>
+    </div>
+
+    <div id="finance" class="page">
+        <h1>💰 分帳系統</h1>
+        <div class="card">
+            <input type="text" id="pay-item" placeholder="項目名稱 (如: 晚餐)">
+            <input type="number" id="pay-amount" placeholder="金額">
+            <select id="pay-currency">
+                <option value="THB">泰銖 (THB)</option>
+                <option value="HKD">港幣 (HKD)</option>
+            </select>
+            <select id="pay-payer">
+                <option value="Cindy">Cindy</option>
+                <option value="Ling">Ling</option>
+                <option value="Ada">Ada</option>
+            </select>
+            <button class="add-btn" onclick="addPayment()">新增記錄</button>
+        </div>
+
+        <div class="card">
+            <h3>📊 結算總額 (固定換算為 THB)</h3>
+            <div id="finance-results" style="font-weight: 700; line-height: 1.8;">
+                正在即時讀取資料庫數據...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 切換分頁控制
+        function showPage(pageId) {
+            // 隱藏所有頁面
+            var pages = document.querySelectorAll('.page');
+            for (var i = 0; i < pages.length; i++) {
+                pages[i].classList.remove('active');
+            }
+            // 取消所有導航高亮
+            var navItems = document.querySelectorAll('.nav-item');
+            for (var j = 0; j < navItems.length; j++) {
+                navItems[j].classList.remove('active');
+            }
+            
+            // 顯示當前點擊頁面
+            var targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+            
+            // 將對應按鈕加上 active 樣式
+            var targetBtn = document.getElementById('btn-' + pageId);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
+        }
+
+        function toggleAccordion(card) { card.classList.toggle('expanded'); }
+        function toggleTodo(item) { item.classList.toggle('checked'); }
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => { alert("📋 地址複製成功！"); });
+        }
+
+        // 預防網頁一進來是全白，自動初始化點擊第一個分頁
+        window.addEventListener('DOMContentLoaded', () => {
+            showPage('flights');
+        });
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAGCx9d4q4dMdSMMAQBJbskdyjcpkit_EM",
+            authDomain: "thai-trip-b0715.firebaseapp.com",
+            databaseURL: "https://thai-trip-b0715-default-rtdb.asia-southeast1.firebasedatabase.app", 
+            projectId: "thai-trip-b0715",
+            storageBucket: "thai-trip-b0715.firebasestorage.app",
+            messagingSenderId: "924311551991",
+            appId: "1:924311551991:web:22a06d3fdc67f5807278f2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const paymentsRef = ref(db, 'trip_payments');
+        const FIXED_RATE = 4.5; 
+
+        window.addPayment = function() {
+            const item = document.getElementById('pay-item').value;
+            const amountInput = parseFloat(document.getElementById('pay-amount').value);
+            const currency = document.getElementById('pay-currency').value;
+            const payer = document.getElementById('pay-payer').value;
+
+            if (!item || isNaN(amountInput)) {
+                alert("請填寫消費名稱與金額！");
+                return;
+            }
+
+            const finalAmount = (currency === 'HKD') ? (amountInput * FIXED_RATE) : amountInput;
+
+            push(paymentsRef, {
+                item,
+                amount: parseFloat(finalAmount.toFixed(2)),
+                payer,
+                timestamp: Date.now()
+            });
+
+            document.getElementById('pay-item').value = '';
+            document.getElementById('pay-amount').value = '';
+            alert(`✅ 成功上傳：${item}`);
+        };
+
+        onValue(paymentsRef, (snapshot) => {
+            const data = snapshot.val() || {};
+            const totals = { "Cindy": 0, "Ling": 0, "Ada": 0 };
+            let totalAmount = 0;
+
+            Object.values(data).forEach(p => {
+                if (totals[p.payer] !== undefined) {
+                    totals[p.payer] += p.amount;
+                    totalAmount += p.amount;
+                }
+            });
+
+            const perPerson = totalAmount / 3;
+            const resultsDiv = document.getElementById('finance-results');
+            
+            if (resultsDiv) {
+                resultsDiv.innerHTML = `
+                    <div style="font-size: 16px; margin-bottom: 8px;">💰 總支出：<span style="color:var(--coral); font-size:20px; font-weight:900;">${totalAmount.toFixed(0)}</span> THB</div>
+                    <div style="font-size:
