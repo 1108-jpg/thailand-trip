@@ -463,7 +463,7 @@
         </div>
 
         <!-- 下榻飯店 -->
-        <h3 style="margin-top:20px; font-weight:900; color:var(--black); font-size:16px;">🏨 下榻飯店</h3>
+        <h3 style="margin-top:20px; font-weight:900; color:var(--black); font-size:16px;">🏨 Hotel</h3>
         <div class="card" style="border-left: 6px solid var(--green);">
             <div class="sticker-label" style="background: var(--green);">BANGKOK STAY</div>
             <div style="font-size: 18px; font-weight: 900; margin-top: 5px;">INNSiDE by Meliá Bangkok Sukhumvit</div>
@@ -638,15 +638,11 @@
         </div>
     </div>
 
-    <!-- 分帳與匯率頁面 -->
-    <div id="finance" class="page">
-        <h1>💸 即時分帳與匯率</h1>
-
-        <!-- Firebase 模組區塊（加上精準個人應收應付計算邏輯） -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        // 1. 初始化 Firebase 
         const firebaseConfig = {
             apiKey: "AIzaSyAGCx9d4q4dMdSMMAQBJbskdyjcpkit_EM",
             authDomain: "thai-trip-b0715.firebaseapp.com",
@@ -660,48 +656,87 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const paymentsRef = ref(db, 'trip_payments');
-        const FIXED_RATE = 4.5; 
+        const FIXED_RATE = 4.5; // HKD 轉 THB 匯率
 
+        // 2. 新增帳單記錄 (綁定 HTML 中的 ID，並做全自動相容處理)
         window.addPayment = function() {
-            const item = document.getElementById('pay-item').value;
-            const amountInput = parseFloat(document.getElementById('pay-amount').value);
-            const currency = document.getElementById('pay-currency').value;
-            const payer = document.getElementById('pay-payer').value;
+            // 自動適應不同的 input ID 命名
+            const itemInput = document.getElementById('pay-item') || document.getElementById('pay-desc');
+            const amountInput = document.getElementById('pay-amount');
+            const currencyInput = document.getElementById('pay-currency');
+            const payerInput = document.getElementById('pay-payer') || document.getElementById('payer');
 
-            if (!item || isNaN(amountInput)) {
-                alert("請填寫消費項目與金額！");
+            if (!itemInput || !amountInput) return;
+
+            const item = itemInput.value.trim();
+            const rawAmount = parseFloat(amountInput.value);
+            const currency = currencyInput ? currencyInput.value : 'THB';
+            const payer = payerInput ? payerInput.value : 'Cindy';
+
+            if (!item || isNaN(rawAmount)) {
+                alert("請填寫消費項目與金額喔！");
                 return;
             }
 
-            const finalAmount = (currency === 'HKD') ? (amountInput * FIXED_RATE) : amountInput;
+            // 如果選的是港幣，自動乘以匯率換算成泰銖儲存
+            const finalAmount = (currency === 'HKD') ? (rawAmount * FIXED_RATE) : rawAmount;
+            const perPersonAmount = Math.round(finalAmount / 3);
 
             push(paymentsRef, {
-                item,
+                item: item,
                 amount: parseFloat(finalAmount.toFixed(2)),
-                payer,
+                payer: payer,
+                per: perPersonAmount,
                 timestamp: Date.now()
             });
 
-            document.getElementById('pay-item').value = '';
-            document.getElementById('pay-amount').value = '';
-            alert(`✅ 成功上傳：${item}`);
+            // 清空輸入框
+            itemInput.value = '';
+            amountInput.value = '';
+            
+            // 彈出提示
+            if (typeof window.showToast === 'function') {
+                window.showToast("💰 共同小帳本已即時同步！");
+            } else {
+                alert(`✅ 成功上傳：${item}`);
+            }
         };
 
+        // 3. 刪除帳單記錄
+        window.deletePayment = function(key) {
+            const msg = "確定要刪除這筆帳單嗎？";
+            if (typeof window.showConfirm === 'function') {
+                window.showConfirm(msg, () => {
+                    remove(ref(db, `trip_payments/${key}`));
+                    if (typeof window.showToast === 'function') window.showToast("🗑️ 帳單已成功刪除！");
+                });
+            } else {
+                if (confirm(msg)) {
+                    remove(ref(db, `trip_payments/${key}`));
+                    alert("🗑️ 帳單已成功刪除！");
+                }
+            }
+        };
+
+        // 4. 即時監聽與數據計算渲染
         onValue(paymentsRef, (snapshot) => {
             const data = snapshot.val() || {};
+            
+            // ─── A. 計算分帳總額與應收應付 ───
             const totals = { "Cindy": 0, "Ling": 0, "Ada": 0 };
             let totalAmount = 0;
 
             Object.values(data).forEach(p => {
-                if (totals[p.payer] !== undefined) {
-                    totals[p.payer] += p.amount;
-                    totalAmount += p.amount;
+                // 相容舊資料格式（有些欄位名稱可能是 item 或是 desc）
+                const payerName = p.payer;
+                const payAmount = p.amount || 0;
+                if (totals[payerName] !== undefined) {
+                    totals[payerName] += payAmount;
+                    totalAmount += payAmount;
                 }
             });
 
             const perPerson = totalAmount / 3;
-            
-            // 計算每人墊付與應付差額 (墊付金額 - 平均應付)
             const diffCindy = totals.Cindy - perPerson;
             const diffLing = totals.Ling - perPerson;
             const diffAda = totals.Ada - perPerson;
@@ -739,62 +774,37 @@
                     </div>
                 `;
             }
-        });
-    </script>
 
-   <script type="module">
-        import { onValue, push, remove, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-        onValue(window.dbRefs.payments, (snapshot) => {
-            const data = snapshot.val() || {};
-            renderPayments(data);
-        });
-
-        window.deletePayment = function(key) {
-            showConfirm("確定要刪除這筆帳單嗎？", () => {
-                remove(ref(window.db, `trip_payments/${key}`));
-                showToast("🗑️ 帳單已成功刪除！");
-            });
-        };
-
-        window.addPayment = function() {
-            const desc = document.getElementById('pay-desc').value;
-            const amount = parseFloat(document.getElementById('pay-amount').value);
-            const payer = document.getElementById('payer').value;
-            if (!desc || !amount) return showCustomAlert("請填寫金額 and 說明喔！");
-            const per = Math.round(amount / 3);
-            push(window.dbRefs.payments, { desc, amount, payer, per });
-            document.getElementById('pay-desc').value = '';
-            document.getElementById('pay-amount').value = '';
-            showToast("💰 共同小帳本已即時同步！");
-        };
-
-        function renderPayments(data) {
-            const el = document.getElementById('pay-records');
-            const keys = Object.keys(data).reverse(); 
-            if (keys.length === 0) {
-                el.innerHTML = '<div style="text-align:center; opacity:0.5; padding:20px;">目前還沒有帳單喔 🍹</div>';
-                return;
+            // ─── B. 渲染下方歷史明細面板 ───
+            const recordsDiv = document.getElementById('pay-records');
+            if (recordsDiv) {
+                const keys = Object.keys(data).reverse(); // 最新時間排在最上面
+                if (keys.length === 0) {
+                    recordsDiv.innerHTML = '<div style="text-align:center; opacity:0.5; padding:20px;">目前還沒有帳單喔 🍹</div>';
+                    return;
+                }
+                
+                recordsDiv.innerHTML = keys.map(key => {
+                    const p = data[key];
+                    const itemName = p.item || p.desc || "未命名項目";
+                    const perAmount = p.per || Math.round((p.amount || 0) / 3);
+                    return `
+                        <div style="padding:12px 0; border-bottom:2px dashed #eee;">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                <div>
+                                    <span style="font-weight:900; font-size:15px;">🍭 ${itemName}</span>
+                                    <div style="font-size:11px; font-weight:700; opacity:0.7; margin-top:3px;">${p.payer} 買單 ➔ 每人分攤 ${perAmount}฿</div>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="color:var(--coral); font-weight:900; font-size:16px;">${p.amount}฿</span>
+                                    <button class="delete-btn" style="background:none; border:none; cursor:pointer;" onclick="deletePayment('${key}')">🗑️</button>
+                                </div>
+                            </div>
+                        </div>`;
+                }).join('');
             }
-            el.innerHTML = keys.map(key => {
-                const p = data[key];
-                return `
-                    <div style="padding:12px 0; border-bottom:2px dashed #eee;">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                            <div>
-                                <span style="font-weight:900; font-size:15px;">🍭 ${p.desc}</span>
-                                <div style="font-size:11px; font-weight:700; opacity:0.7; margin-top:3px;">${p.payer} 買單 ➔ 每人 ${p.per}฿</div>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="color:var(--coral); font-weight:900; font-size:16px;">${p.amount}฿</span>
-                                <button class="delete-btn" onclick="deletePayment('${key}')">🗑️</button>
-                            </div>
-                        </div>
-                    </div>`;
-            }).join('');
-        }
+        });
     </script>
-
     <script>
         let rates = { thbToHkd: 0.227 };
 
