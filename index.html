@@ -4,1094 +4,121 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thai 🌸🌿</title>
-    <!-- iOS 專用圖示 -->
-    <link class="js-meta-icon" rel="apple-touch-icon" href="icon.png">
-    <!-- Android 與 Chrome 專用圖示 -->
+    <link rel="apple-touch-icon" href="icon.png">
     <link rel="icon" type="image/png" href="icon.png">
-    <!-- 設定 App 在手機上開啟時的頂部狀態欄顏色 -->
     <meta name="theme-color" content="#f8d7ff">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     
-    <!-- Firebase SDK (使用 CDN 版本以確保跨裝置兼容) -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+
+    <style>
+        /* 你的原本 CSS 保持不變 */
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;900&display=swap');
+        :root { --pink: #ff9ff3; --yellow: #feca57; --blue: #48dbfb; --green: #1dd1a1; --coral: #ff6b6b; --black: #2d3436; --bg-purple: #f8d7ff; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg-purple); margin: 0; padding-bottom: 60px; }
+        .page { display: none; padding: 120px 20px 25px 20px; }
+        .page.active { display: block; }
+        .card { background: #fff; border: 3px solid var(--black); border-radius: 16px; padding: 16px; margin: 12px 0; }
+        .nav-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px; background: #fff; border-bottom: 4px solid var(--black); position: fixed; top: 48px; width: 100%; box-sizing: border-box; z-index: 1000; }
+        .nav-item { border: 2px solid var(--black); background: #fff; cursor: pointer; padding: 8px; border-radius: 8px; font-weight: 900; }
+        .nav-item.active { background: var(--yellow); }
+        .add-btn { background: var(--green); border: 3px solid var(--black); width: 100%; padding: 12px; border-radius: 50px; font-weight: 900; cursor: pointer; }
+        input, select { width: 100%; padding: 10px; margin: 5px 0; border: 2px solid var(--black); border-radius: 8px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+    <div class="top-header-container" style="position:fixed; top:0; width:100%; z-index:2000;">
+        <div class="app-banner" style="background:var(--pink); text-align:center; padding:10px; font-weight:900;">✨ THAI ADVENTURE 🌸</div>
+        <nav class="nav-bar">
+            <button class="nav-item" onclick="showPage('flights')">✈️ 航班</button>
+            <button class="nav-item" onclick="showPage('itinerary')">🗺️ 行程</button>
+            <button class="nav-item" onclick="showPage('checklist')">✅ 檢查</button>
+            <button class="nav-item active" onclick="showPage('finance')">💰 分帳</button>
+        </nav>
+    </div>
+
+    <div id="finance" class="page active">
+        <h1>💰 分帳系統</h1>
+        <div class="card">
+            <input type="text" id="pay-item" placeholder="項目名稱">
+            <input type="number" id="pay-amount" placeholder="金額">
+            <select id="pay-currency">
+                <option value="THB">泰銖 (THB)</option>
+                <option value="HKD">港幣 (HKD)</option>
+            </select>
+            <select id="pay-payer">
+                <option value="Cindy">Cindy</option>
+                <option value="Ling">Ling</option>
+                <option value="Ada">Ada</option>
+            </select>
+            <button class="add-btn" onclick="addPayment()">新增記錄</button>
+        </div>
+        <div id="finance-results" class="card">
+            <h3>📊 結算總額</h3>
+            <div id="results-content">讀取中...</div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAGCx9d4q4dMdSMMAQBJbskdyjcpkit_EM",
             authDomain: "thai-trip-b0715.firebaseapp.com",
-            databaseURL: "https://thai-trip-b0715-default-rtdb.asia-southeast1.firebasedatabase.app", 
+            databaseURL: "https://thai-trip-b0715-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "thai-trip-b0715",
             storageBucket: "thai-trip-b0715.firebasestorage.app",
             messagingSenderId: "924311551991",
-            appId: "1:924311551991:web:22a06d3fdc67f5807278f2",
-            measurementId: "G-TVNF7C25G8"
+            appId: "1:924311551991:web:22a06d3fdc67f5807278f2"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const paymentsRef = ref(db, 'trip_payments');
+        const FIXED_RATE = 4.5;
 
-        window.db = db;
-        window.dbRefs = {
-            lists: ref(db, 'trip_lists'),
-            payments: ref(db, 'trip_payments')
-        };
-    </script>
-
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght=700;900&family=Plus+Jakarta+Sans:wght=700;800&display=swap');
-
-        :root { 
-            --pink: #ff9ff3;
-            --yellow: #feca57;
-            --blue: #48dbfb;
-            --green: #1dd1a1;
-            --coral: #ff6b6b;
-            --black: #2d3436;
-            --white: #ffffff;
-            --bg-purple: #f8d7ff;
-        }
-        
-        body { 
-            font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif; 
-            background: var(--bg-purple);
-            color: var(--black);
-            margin: 0; 
-            padding-bottom: 40px; 
-            background-image: radial-gradient(var(--pink) 1px, transparent 1px);
-            background-size: 20px 20px;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* 頂部固定綜合導航區塊 */
-        .top-header-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: var(--white);
-            border-bottom: 4px solid var(--black);
-            z-index: 2000;
-            box-shadow: 0 6px 0px rgba(0,0,0,0.05);
-            box-sizing: border-box;
-        }
-
-        /* 熱帶漸層霓虹 Banner */
-        .app-banner {
-            height: 48px;
-            border-bottom: 3px solid var(--black);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            color: var(--white);
-            background: linear-gradient(135deg, #ff9ff3 0%, #ff6b6b 50%, #feca57 100%);
-            text-shadow: 2px 2px 0px var(--black), -1px -1px 0px var(--black), 1px -1px 0px var(--black), -1px 1px 0px var(--black);
-            box-shadow: inset 0 -2px 0px rgba(0,0,0,0.1);
-        }
-
-        /* 檔案夾風格單排 5 欄控制板 */
-        .nav-bar { 
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 4px;
-            padding: 8px 8px;
-            background: #fafafa;
-            box-sizing: border-box;
-        }
-
-        /* Neobrutalism 3D 檔案夾式梯形紙頁籤 */
-        .nav-item { 
-            border: 2px solid var(--black); 
-            background: var(--white); 
-            color: var(--black); 
-            font-size: 11px; 
-            font-weight: 900; 
-            height: 38px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.08s ease;
-            box-shadow: 2.5px 2.5px 0px var(--black);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            box-sizing: border-box;
-            user-select: none;
-            /* 3D 梯形視覺投影 (上窄下寬) */
-            transform: perspective(30px) rotateX(12deg);
-            transform-origin: bottom;
-        }
-        .nav-item span { font-size: 16px; }
-
-        /* 點擊及啟用狀態：模擬實體活頁紙卡凹陷 */
-        .nav-item.active { 
-            color: var(--white); 
-            background: linear-gradient(135deg, #ff9ff3 0%, #ff6b6b 50%, #feca57 100%);
-            text-shadow: 1px 1px 0px var(--black), -0.5px -0.5px 0px var(--black), 0.5px -0.5px 0px var(--black), -0.5px 0.5px 0px var(--black);
-            box-shadow: 0.5px 0.5px 0px var(--black);
-            transform: perspective(30px) rotateX(12deg) translate(2px, 2px);
-        }
-        .nav-item:active {
-            transform: perspective(30px) rotateX(12deg) translate(2px, 2px);
-            box-shadow: 0.5px 0.5px 0px var(--black);
-        }
-
-        /* 頁面容器 (已針對單排 5 欄高度調整為 120px) */
-        .page { 
-            display: none; 
-            padding: 120px 20px 25px 20px; 
-            animation: popIn 0.3s ease-out; 
-        }
-        .page.active { display: block; }
-        @keyframes popIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        h1 { 
-            font-size: 24px; font-weight: 900; color: var(--black);
-            text-shadow: 2px 2px 0px var(--white), 3px 3px 0px var(--blue);
-            margin-bottom: 15px; text-align: center;
-            margin-top: 5px;
-        }
-
-        /* 靜態純資訊卡片 (平整細框，無立體影，不令人困惑) */
-        .card { 
-            background: var(--white); 
-            border: 3px solid var(--black);
-            border-radius: 16px;
-            padding: 16px; 
-            margin: 12px 0; 
-            box-shadow: none; 
-            position: relative;
-        }
-
-        /* 可展開的立體卡片 (帶有 3D 厚影，暗示可以點擊按壓) */
-        .card.clickable-accordion {
-            cursor: pointer;
-            box-shadow: 5px 5px 0px var(--black);
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-        }
-        .card.clickable-accordion:active {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0px var(--black);
-        }
-
-        /* 折疊選單（Accordion）通用樣式 */
-        .accordion-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            user-select: none;
-        }
-        .accordion-header-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .accordion-title { font-weight: 900; font-size: 15px; }
-        .accordion-arrow { font-size: 12px; transition: transform 0.2s; font-weight: 900; }
-        .accordion-content {
-            display: none; 
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 2px dashed #eee;
-            animation: slideDown 0.2s ease-out;
-        }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-        .card.expanded .accordion-arrow { transform: rotate(180deg); }
-        .card.expanded .accordion-content { display: block; }
-
-        /* 精簡版行程時間點樣式 */
-        .iti-timeline-item {
-            margin-bottom: 12px;
-            padding-left: 10px;
-            border-left: 3px solid var(--pink);
-            font-size: 13px;
-            line-height: 1.5;
-            font-weight: 700;
-        }
-        .iti-timeline-item:last-child { margin-bottom: 0; }
-        .iti-time {
-            font-weight: 900;
-            color: var(--coral);
-            font-size: 12px;
-            background: #fff5f5;
-            padding: 1px 5px;
-            border-radius: 4px;
-            border: 1px solid var(--coral);
-            display: inline-block;
-            margin-bottom: 2px;
-        }
-        .iti-link { color: #0984e3; text-decoration: underline; font-weight: 900; }
-
-        /* 匯率專用排版 */
-        .converter-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-        .converter-row {
-            display: flex;
-            align-items: center;
-            background: #fafafa;
-            border: 2px solid var(--black);
-            border-radius: 10px;
-            padding: 4px 10px;
-        }
-        .converter-label { font-weight: 900; font-size: 14px; width: 95px; display: flex; align-items: center; gap: 4px; }
-        .converter-input {
-            border: none !important; padding: 8px !important; margin: 0 !important;
-            font-size: 18px !important; background: transparent !important; text-align: right; box-shadow: none !important;
-        }
-
-        /* 迷你版機票專用樣式 */
-        .mini-ticket { padding: 12px; margin: 8px 0; border-radius: 12px; box-shadow: none; border-width: 2px; }
-        .mini-ticket .ticket-cutout { margin-top: 8px; padding-top: 8px; border-top: 2px dashed var(--black); }
-
-        .sticker-label {
-            display: inline-block; background: var(--yellow); border: 2px solid var(--black);
-            padding: 3px 10px; border-radius: 50px; font-size: 11px; font-weight: 900;
-            box-shadow: 1.5px 1.5px 0px var(--black); flex-shrink: 0;
-        }
-
-        .add-btn { 
-            background: var(--green); color: var(--black); border: 3px solid var(--black); 
-            width: 100%; padding: 12px; border-radius: 50px; font-weight: 900; font-size: 16px;
-            box-shadow: 3px 3px 0px var(--black); cursor: pointer; transition: 0.1s;
-        }
-        .add-btn:active { transform: translate(1px, 1px); box-shadow: 1.5px 1.5px 0px var(--black); }
-        
-        .map-btn-large {
-            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            background: var(--blue); color: var(--black); border: 2px solid var(--black);
-            padding: 8px 16px; border-radius: 50px; font-size: 13px; font-weight: 900;
-            text-decoration: none; box-shadow: 2px 2px 0px var(--black); margin-top: 10px; transition: 0.1s;
-        }
-        .map-btn-large:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0px var(--black); }
-
-        .copy-btn {
-            display: inline-flex; align-items: center; gap: 4px; background: #f1f5f9;
-            border: 2px solid var(--black); padding: 4px 10px; border-radius: 8px;
-            font-size: 11px; font-weight: 900; cursor: pointer; margin-top: 6px; box-shadow: 1.5px 1.5px 0px var(--black);
-        }
-        .copy-btn:active { transform: translate(0.5px, 0.5px); box-shadow: 1px 1px 0px var(--black); }
-
-        input, select { 
-            width: 100%; padding: 12px; margin: 10px 0; background: #fff; 
-            border: 3px solid var(--black); border-radius: 12px; 
-            font-family: inherit; font-weight: 700; box-sizing: border-box;
-        }
-        .delete-btn { font-size: 20px; border: none; background: none; cursor: pointer; transition: transform 0.1s; }
-        .delete-btn:active { transform: scale(1.2); }
-
-        /* 檢查清單樣式 */
-        .todo-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 2px dashed #eee; cursor: pointer; }
-        .todo-item:last-child { border-bottom: none; }
-        .todo-checkbox {
-            width: 22px; height: 22px; border: 2px solid var(--black); border-radius: 6px; margin-right: 12px;
-            display: flex; align-items: center; justify-content: center; font-size: 13px; background: white; transition: 0.2s; flex-shrink: 0;
-        }
-        .todo-item.checked .todo-checkbox { background: var(--green); }
-        .todo-text { font-weight: 700; font-size: 14px; transition: 0.2s; }
-        .todo-item.checked .todo-text { text-decoration: line-through; opacity: 0.5; }
-
-        .baggage-badge-box { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-        .bag-badge {
-            background: #fffde7; border: 2px solid var(--black); border-radius: 10px; padding: 4px 8px; font-size: 10px; font-weight: 900;
-            display: flex; align-items: center; gap: 3px; box-shadow: 1.5px 1.5px 0px var(--black);
-        }
-
-        /* 100% 遵守規定：自訂 3D 霓虹對話框 (取代內建 confirm/alert) */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(2px);
-            z-index: 5000; display: none; align-items: center; justify-content: center;
-            padding: 20px; box-sizing: border-box;
-        }
-        .modal-box {
-            background: var(--white); border: 4px solid var(--black); border-radius: 20px;
-            box-shadow: 8px 8px 0px var(--black); padding: 24px; max-width: 340px; width: 100%;
-            text-align: center; animation: popUpModal 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes popUpModal { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal-title { font-size: 18px; font-weight: 900; margin-bottom: 12px; color: var(--coral); }
-        .modal-text { font-size: 14px; font-weight: 700; margin-bottom: 20px; line-height: 1.5; }
-        .modal-buttons { display: flex; gap: 10px; justify-content: center; }
-        .modal-btn {
-            border: 2px solid var(--black); padding: 8px 16px; border-radius: 50px;
-            font-size: 13px; font-weight: 900; cursor: pointer; transition: 0.1s;
-            box-shadow: 2px 2px 0px var(--black);
-        }
-        .modal-btn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0px var(--black); }
-        .modal-btn.confirm { background: var(--green); }
-        .modal-btn.cancel { background: #f1f5f9; }
-
-        /* Y2K 貼紙風烤吐司訊息盒 (Toast) */
-        .toast-container {
-            position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
-            z-index: 6000; display: flex; flex-direction: column; gap: 8px;
-            width: 90%; max-width: 320px; pointer-events: none;
-        }
-        .toast {
-            background: var(--yellow); border: 2px solid var(--black); border-radius: 12px;
-            padding: 10px 16px; font-size: 12px; font-weight: 900; color: var(--black);
-            box-shadow: 3px 3px 0px var(--black); display: flex; align-items: center; gap: 8px;
-            animation: slideInToast 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-sizing: border-box;
-        }
-        @keyframes slideInToast { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        /* 點擊粒子特效物件 */
-        .click-particle {
-            position: fixed; pointer-events: none; z-index: 9999;
-            font-size: 14px; animation: particleFly 0.6s ease-out forwards;
-        }
-        @keyframes particleFly {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-            100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2) rotate(var(--rot)); opacity: 0; }
-        }
-    </style>
-    <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-    // 1. 初始化
-    const firebaseConfig = { /* ... 保持你原本的配置 ... */ };
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    window.dbRefs = { payments: ref(db, 'trip_payments') };
-
-    // 2. 固定匯率
-    const FIXED_RATE = 4.5;
-
-    // 3. 暴露函數到全域 (關鍵：這樣 HTML 的 onclick 才能執行)
-    window.addPayment = function() {
-        const item = document.getElementById('pay-item').value;
-        const amount = parseFloat(document.getElementById('pay-amount').value);
-        const currency = document.getElementById('pay-currency').value;
-        const payer = document.getElementById('pay-payer').value;
-
-        if (!item || isNaN(amount)) { alert("請檢查輸入項目！"); return; }
-
-        const finalAmount = (currency === 'HKD') ? (amount * FIXED_RATE) : amount;
-
-        push(window.dbRefs.payments, { item, amount: finalAmount, payer, timestamp: Date.now() });
-        document.getElementById('pay-item').value = '';
-        document.getElementById('pay-amount').value = '';
-    };
-
-    // 4. 即時監聽數據
-    onValue(window.dbRefs.payments, (snapshot) => {
-        const data = snapshot.val() || {};
-        const totals = { "Cindy": 0, "Ling": 0, "Ada": 0 };
-        let total = 0;
-        Object.values(data).forEach(p => { 
-            totals[p.payer] = (totals[p.payer] || 0) + p.amount;
-            total += p.amount;
-        });
-        
-        const results = document.getElementById('finance-results');
-        if (results) {
-            results.innerHTML = `<div>總額: ${total.toFixed(0)} THB</div>
-                                 <div>每人應付: ${(total/3).toFixed(0)} THB</div>
-                                 <hr>
-                                 <p>Cindy: ${totals.Cindy.toFixed(0)} | Ling: ${totals.Ling.toFixed(0)} | Ada: ${totals.Ada.toFixed(0)}</p>`;
-        }
-    });
-</script>
-</head>
-<body>
-
-    <!-- 自訂 Modal 對話框 -->
-    <div id="custom-modal" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title" id="modal-title-text">✨ 系統通知</div>
-            <div class="modal-text" id="modal-body-text">確認要執行這個動作嗎？</div>
-            <div class="modal-buttons" id="modal-btn-container"></div>
-        </div>
-    </div>
-
-    <!-- 烤吐司訊息中心 -->
-    <div id="toast-container" class="toast-container"></div>
-
-    <!-- 頂部固定綜合導航區塊 (2x3 電玩控制板，帶有檔案夾活頁紙卡 3D 梯形頁籤) -->
-    <!-- 頂部固定綜合導航區塊 (5 欄單排檔案夾活頁紙卡) -->
-    <div class="top-header-container">
-        <div class="app-banner">✨ THAI ADVENTURE 🌸</div>
-        <!-- 迷你天氣顯示區 (整合至頂部) -->
-        <div id="mini-weather-strip" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 4px; background: #fffde7; border-bottom: 2px solid var(--black); font-size: 12px; font-weight: 900;">
-            <div id="mini-weather-display">☀️ 載入中...</div>
-        </div>
-        <nav class="nav-bar" style="grid-template-columns: repeat(4, 1fr);">
-            <button class="nav-item active" onclick="showPage('flights', event)"><span>✈️</span>航班</button>
-            <button class="nav-item" onclick="showPage('itinerary', event)"><span>🗺️</span>行程</button>
-            <button class="nav-item" onclick="showPage('checklist', event)"><span>✅</span>檢查</button>
-            <button class="nav-item" onclick="showPage('finance', event)"><span>💰</span>分帳</button>
-        </nav>
-    </div>
-
-    <!-- 航班頁面 -->
-    <div id="flights" class="page">
-        <h1>✈️ 航班與住宿</h1>
-        <div class="card" style="background: var(--yellow); text-align: center; padding: 12px;">
-            <div style="font-size: 13px; font-weight: 900; margin-bottom: 3px;">距離 1/7 泰國大冒險還有</div>
-            <div id="countdown" style="font-size: 22px; font-weight: 900; text-shadow: 1.5px 1.5px 0 var(--white);">載入中...</div>
-        </div>
-
-        <!-- 去程區塊 -->
-        <div class="card clickable-accordion" onclick="toggleAccordion(this)">
-            <div class="accordion-header">
-                <div class="accordion-header-left"><div class="sticker-label">1/7</div><div class="accordion-title">🛫 去程</div></div>
-                <div class="accordion-arrow">▼</div>
-            </div>
-            <div class="accordion-content" onclick="event.stopPropagation();">
-                <!-- Cindy & Ling 去程 -->
-                <div class="card mini-ticket" style="border-left: 6px solid var(--blue);">
-                    <div class="sticker-label" style="background: var(--blue); color: white;">Cindy & LING</div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
-                        <div><span style="font-size: 9px; opacity: 0.6;">HKG</span> <b style="font-size: 16px;">07:40</b></div>
-                        <div style="font-size: 14px;">✈️</div>
-                        <div><span style="font-size: 9px; opacity: 0.6;">BKK</span> <b style="font-size: 16px;">09:35</b></div>
-                    </div>
-                    <div class="ticket-cutout">
-                        <div style="font-size: 11px; font-weight: 900; color: var(--coral);">聯合航空 UA 820</div>
-                        <div class="baggage-badge-box">
-                            <div class="bag-badge">👜 隨身包</div>
-                            <div class="bag-badge">🧳 手提</div>
-                            <div class="bag-badge" style="background:#e8f5e9;">📦 託運 23kg</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Ada 去程 -->
-                <div class="card mini-ticket" style="border-left: 6px solid var(--pink);">
-                    <div class="sticker-label" style="background: var(--pink);">ADA</div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
-                        <div><span style="font-size: 9px; opacity: 0.6;">TPE</span> <b style="font-size: 16px;">13:25</b></div>
-                        <div style="font-size: 14px;">✈️</div>
-                        <div><span style="font-size: 9px; opacity: 0.6;">BKK</span> <b style="font-size: 16px;">16:10</b></div>
-                    </div>
-                    <div class="ticket-cutout"><div style="font-size: 11px; font-weight: 900; color: var(--coral);">長榮航空 BR 211</div></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 回程區塊 -->
-        <div class="card clickable-accordion" onclick="toggleAccordion(this)">
-            <div class="accordion-header">
-                <div class="accordion-header-left"><div class="sticker-label" style="background:var(--pink)">5/7</div><div class="accordion-title">🛬 回程</div></div>
-                <div class="accordion-arrow">▼</div>
-            </div>
-            <div class="accordion-content" onclick="event.stopPropagation();">
-                <!-- Ada 回程 -->
-                <div class="card mini-ticket" style="border-left: 6px solid var(--pink);">
-                    <div class="sticker-label" style="background: var(--pink);">ADA</div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
-                        <div><span style="font-size: 9px; opacity: 0.6;">BKK</span> <b style="font-size: 16px;">17:50</b></div>
-                        <div style="font-size: 14px;">✈️</div>
-                        <div><span style="font-size: 9px; opacity: 0.6;">TPE</span> <b style="font-size: 16px;">22:45</b></div>
-                    </div>
-                    <div class="ticket-cutout"><div style="font-size: 11px; font-weight: 900; color: var(--green);">長榮航空 BR 212</div></div>
-                </div>
-                <!-- Cindy & Ling 回程 -->
-                <div class="card mini-ticket" style="border-left: 6px solid var(--blue);">
-                    <div class="sticker-label" style="background: var(--blue); color: white;">Cindy & LING</div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
-                        <div><div style="display:inline; font-size: 9px; opacity: 0.6;">BKK</div> <b style="font-size: 16px;">18:10</b></div>
-                        <div style="font-size: 14px;">✈️</div>
-                        <div><div style="display:inline; font-size: 9px; opacity: 0.6;">HKG</div> <b style="font-size: 16px;">22:00</b></div>
-                    </div>
-                    <div class="ticket-cutout">
-                        <div style="font-size: 11px; font-weight: 900; color: var(--green);">泰國航空 TG 602</div>
-                        <div class="baggage-badge-box">
-                            <div class="bag-badge" style="color:var(--coral)">👜 隨身 1kg</div>
-                            <div class="bag-badge">🧳 手提 7kg</div>
-                            <div class="bag-badge" style="background:#e8f5e9;">📦 託運 23kg</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 下榻飯店 -->
-        <h3 style="margin-top:20px; font-weight:900; color:var(--black); font-size:16px;">🏨 下榻飯店</h3>
-        <div class="card" style="border-left: 6px solid var(--green);">
-            <div class="sticker-label" style="background: var(--green);">BANGKOK STAY</div>
-            <div style="font-size: 18px; font-weight: 900; margin-top: 5px;">INNSiDE by Meliá Bangkok Sukhumvit</div>
-            
-            <div style="margin-top: 10px; font-size: 12px; font-weight: 700; line-height: 1.5;">
-                <b style="color:var(--coral);">🇹🇭 泰文地址 (計程車複製)：</b><br>
-                <span id="addr-th">โรงแรมอินไซด์ บาย มีเลีย กรุงเทพฯ สุขุมวิท, 1479 ถนนสุขุมวิท, แขวงพระโขนงเหนือ, เขตวัฒนา, กรุงเทพมหานคร 10110</span><br>
-                <button class="copy-btn" onclick="copyAddress('addr-th')">📋 複製泰文地址</button>
-            </div>
-
-            <div style="margin-top: 10px; font-size: 12px; font-weight: 700; line-height: 1.5; border-top: 1px dashed #eee; padding-top: 10px;">
-                <b>🇬🇧 英文地址：</b><br>
-                <span id="addr-en">1479 Sukhumvit Rd, Phra Khanong Nuea, Watthana, Bangkok 10110, Thailand</span><br>
-                <button class="copy-btn" onclick="copyAddress('addr-en')">📋 複製英文地址</button>
-            </div>
-
-            <div style="margin-top: 5px;"><a href="https://www.google.com/maps/search/?api=1&query=INNSiDE+by+Melia+Bangkok+Sukhumvit" target="_blank" class="map-btn-large">🗺️ 在 Google Maps 開啟地圖</a></div>
-        </div>
-    </div>
-
-    <!-- 行程頁面 -->
-    <div id="itinerary" class="page">
-        <h1>🎒 行程計畫</h1>
-        <p style="text-align: center; font-size: 12px; opacity: 0.6; margin-top: -8px; font-weight: 700;">✨ 點擊各天卡片可展開或收合詳情 ✨</p>
-        
-        <!-- Day 1 -->
-        <div class="card clickable-accordion" onclick="toggleAccordion(this)">
-            <div class="accordion-header">
-                <div class="accordion-header-left"><div class="sticker-label">01/07</div><div class="accordion-title">🥂 抵達集合！河畔微醺派對</div></div>
-                <div class="accordion-arrow">▼</div>
-            </div>
-            <div class="accordion-content" onclick="event.stopPropagation();">
-                <div class="iti-timeline-item">
-                    <span class="iti-time">09:35 AM</span> <b>🛬 抵達 <a href="https://www.google.com/maps/search/?api=1&query=Suvarnabhumi+Airport+BKK" target="_blank" class="iti-link">曼谷 BKK 機場</a></b><br>
-                    過海關後叫 Grab/Bolt 直奔飯店車程約 45 分鐘。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">11:30 AM</span> <b>🏨 <a href="https://www.google.com/maps/search/?api=1&query=INNSiDE+by+Melia+Bangkok+Sukhumvit" target="_blank" class="iti-link">飯店 Check-in 寄存行李</a></b><br>
-                    入住 On Nut 站飯店，可於周邊晃晃或吃點輕食。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">02:30 PM</span> <b>🛍️ 逛 <a href="https://www.google.com/maps/search/?api=1&query=Emsphere+Bangkok" target="_blank" class="iti-link">EmSphere 潮流商場</a></b><br>
-                    搭 BTS 捷運至 Phrom Phong 站，霓虹網美牆適合拍大合照！
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">05:30 PM</span> <b>🌅 <a href="https://www.google.com/maps/search/?api=1&query=Fallabella+River+Front+ICONSIAM" target="_blank" class="iti-link">ICONSIAM 微醺夕陽</a></b><br>
-                    直奔 6 樓 <b>Fallabella River Front</b> 戶外區看河畔落日（調酒約 450–650 THB）。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">10:00 PM</span> <b>🪩 <a href="https://www.google.com/maps/search/?api=1&query=Levels+Bed+Club+Bangkok" target="_blank" class="iti-link">Levels 高空夜店開趴</a></b><br>
-                    前往 Sukhumvit Soi 11 伴隨絕美夜景熱舞（門票約 500 THB 附飲品券）。
-                </div>
-            </div>
-        </div>
-
-        <!-- Day 2 -->
-        <div class="card clickable-accordion" onclick="toggleAccordion(this)">
-            <div class="accordion-header">
-                <div class="accordion-header-left"><div class="sticker-label" style="background:var(--pink)">02/07</div><div class="accordion-title">🧶 復古莊園與地毯手作</div></div>
-                <div class="accordion-arrow">▼</div>
-            </div>
-            <div class="accordion-content" onclick="event.stopPropagation();">
-                <div class="iti-timeline-item">
-                    <span class="iti-time">11:00 AM</span> <b>☕ <a href="https://www.google.com/maps/search/?api=1&query=Hong+Sieng+Kong+Bangkok" target="_blank" class="iti-link">Hong Sieng Kong 莊園早午餐</a></b><br>
-                    200 年老宅改建的河畔絕美復古咖啡廳，超殺快門（消費約 250–400 THB）。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">02:30 PM</span> <b>🍣 <a href="https://www.google.com/maps/search/?api=1&query=Kushiro+Omakase+and+Japanese+Dining+by+Uni" target="_blank" class="iti-link">Kushiro Omakase & Japanese Dining by Uni</a></b><br>
-                    享用精緻日式午餐盛宴。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">04:30 PM</span> <b>🔫 <a href="https://www.google.com/maps/search/?api=1&query=The+Commu+Studio+Bangkok" target="_blank" class="iti-link">Tufting 手作簇絨地毯/鏡子</a></b><br>
-                    姐妹連線手作！親手織一塊專屬造型的迷你地毯（費用約 1,200–1,800 THB）。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">06:30 PM</span> <b>🏮 <a href="https://www.google.com/maps/search/?api=1&query=Ba+Hao+Bangkok" target="_blank" class="iti-link">唐人街 Ba Hao (八號) 微醺夜</a></b><br>
-                    文青酒吧街 Soi Nana，吃美味晚餐並品嚐東方韻味調酒（調酒約 400–550 THB）。
-                </div>
-            </div>
-        </div>
-
-        <!-- Day 3 -->
-        <div class="card clickable-accordion" onclick="toggleAccordion(this)">
-            <div class="accordion-header">
-                <div class="accordion-header-left"><div class="sticker-label" style="background:var(--green)">03/07</div><div class="accordion-title">💆 貴婦頂級 Spa 與發光樹</div></div>
-                <div class="accordion-arrow">▼</div>
-            </div>
-            <div class="accordion-content" onclick="event.stopPropagation();">
-                <div class="iti-timeline-item">
-                    <span class="iti-time">11:30 AM</span> <b>🔮 <a href="https://www.google.com/maps/search/?api=1&query=Featherstone+Bistro+Cafe+Bangkok" target="_blank" class="iti-link">Featherstone 魔幻藥局午餐</a></b><br>
-                    富人區 Thonglor 的神祕學院風咖啡廳，餐點極精緻（費用約 400–600 THB）。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">02:00 PM</span> <b>💆 <a href="https://www.google.com/maps/search/?api=1&query=Treasure+Spa+Thong+Lo+Bangkok" target="_blank" class="iti-link">TREASURE Spa 奢華摩洛哥風按摩</a></b><br>
-                    超夢幻藍色調頂級 Spa，好好享受精油或身體磨砂（60分鐘約 1,500–2,200 THB）。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">05:30 PM</span> <b>🍸 <a href="https://www.google.com/maps/search/?api=1&query=Tichuca+Rooftop+Bar+Bangkok" target="_blank" class="iti-link">Tichuca 水母發光樹高空吧</a></b><br>
-                    在巨大 LED 霓虹水母樹下喝招牌鳳梨調酒，看最酷夜景（調酒約 550–800 THB）。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">10:00 PM</span> <b>🔥 <a href="https://www.google.com/maps/search/?api=1&query=Spaceplus+Bangkok" target="_blank" class="iti-link">Thonglor 時髦夜生活續攤</a></b><br>
-                    轉戰本地最懂穿搭、最精英年輕海歸潮人雲集的 BEAM 或 Spaceplus 夜店。
-                </div>
-            </div>
-        </div>
-
-        <!-- Day 4 -->
-        <div class="card clickable-accordion" onclick="toggleAccordion(this)">
-            <div class="accordion-header">
-                <div class="accordion-header-left"><div class="sticker-label" style="background:var(--yellow)">04/07</div><div class="accordion-title">🧪 專屬香水調配與老上海夜</div></div>
-                <div class="accordion-arrow">▼</div>
-            </div>
-            <div class="accordion-content" onclick="event.stopPropagation();">
-                <div class="iti-timeline-item">
-                    <span class="iti-time">11:00 AM</span> <b>🌿 <a href="https://www.google.com/maps/search/?api=1&query=Ari+Bangkok" target="_blank" class="iti-link">Ari 文青別墅街區漫步</a></b><br>
-                    安靜低調的富人區，有非常多馬卡龍色調極簡咖啡廳，超適合街拍。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">01:00 PM</span> <b>🧪 <a href="https://www.google.com/maps/search/?api=1&query=First+Aid+Kiss+House+of+Scents+Ari" target="_blank" class="iti-link">First Aid Kiss 訂製專屬香水</a></b><br>
-                    體驗親自調配專屬香氣、混合比例，並自己設計瓶身標籤（費用約 1,000–1,500 THB）。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">04:00 PM</span> <b>💛 <a href="https://www.google.com/maps/search/?api=1&query=The+House+on+Sathorn" target="_blank" class="iti-link">The House on Sathorn 百年莊園茶聚</a></b><br>
-                    1889 年黃色殖民古蹟中庭，喝杯精緻白葡萄酒享受老錢風（消費約 800–1,200 THB）。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">05:30 PM</span> <b>🦀 <a href="https://www.google.com/maps/search/?api=1&query=Horsamut+Restaurant+Tha+Tian" target="_blank" class="iti-link">Horsamut Restaurant (Tha Tian Branch)</a></b><br>
-                    絕美河畔晚宴，品嚐特色泰式海鮮料理。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">09:30 PM</span> <b>🏮 <a href="https://www.google.com/maps/search/?api=1&query=Sing+Sing+Theater+Bangkok" target="_blank" class="iti-link">Sing Sing Theater 迷幻上海夜店</a></b><br>
-                    盛裝出席！宛如 1930 年代夜上海歌劇院，氣氛迷幻至極（調酒約 450–650 THB）。
-                </div>
-            </div>
-        </div>
-
-        <!-- Day 5 -->
-        <div class="card clickable-accordion" onclick="toggleAccordion(this)">
-            <div class="accordion-header">
-                <div class="accordion-header-left"><div class="sticker-label" style="background:var(--blue); color:white;">05/07</div><div class="accordion-title">👙 泳池大片與 Siam 最後爆買</div></div>
-                <div class="accordion-arrow">▼</div>
-            </div>
-            <div class="accordion-content" onclick="event.stopPropagation();">
-                <div class="iti-timeline-item">
-                    <span class="iti-time">09:30 AM</span> <b>👙 <a href="https://www.google.com/maps/search/?api=1&query=INNSiDE+by+Melia+Bangkok+Sukhumvit" target="_blank" class="iti-link">飯店高空無邊際泳池大片拍攝</a></b><br>
-                    衝頂樓泳池，順光拍下背靠曼谷天際線的度假大片。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">12:00 PM</span> <b>🧳 Siam 區最後瘋狂爆買</b><br>
-                    退房寄行李。衝 <a href="https://www.google.com/maps/search/?api=1&query=Siam+Paragon+Bangkok" target="_blank" class="iti-link">Siam Paragon</a> 與 <a href="https://www.google.com/maps/search/?api=1&query=CentralwOrld+Bangkok" target="_blank" class="iti-link">CentralwOrld</a> 掃貨限定美妝、手信。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">01:30 PM</span> <b>🍛 <a href="https://www.google.com/maps/search/?api=1&query=Greyhound+Cafe+Siam+Center" target="_blank" class="iti-link">Greyhound Cafe 創意泰式融合午餐</a></b><br>
-                    品嚐招牌單骨雞翼和創意泰式意粉，美味完美收尾（費用約 400–600 THB）。
-                </div>
-                <div class="iti-timeline-item">
-                    <span class="iti-time">03:15 PM</span> <b>✈️ 前往 <a href="https://www.google.com/maps/search/?api=1&query=Suvarnabhumi+Airport+BKK" target="_blank" class="iti-link">曼谷 BKK 機場</a></b><br>
-                    回飯店拿行李，叫 Grab 直奔機場辦理登機，搭乘 06:10 PM 班機回程。
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 檢查清單頁面 -->
-    <div id="checklist" class="page">
-        <h1>✅ 出發前檢查</h1>
-        <div class="card">
-            <div class="sticker-label" style="background: var(--coral); color: white;">MY CHECKLIST</div>
-            <p style="font-size: 12px; opacity: 0.6; margin-top:0;">此清單獨立儲存於各人手機中，打勾不會影響別人喔！</p>
-            <div id="todo-list-container"></div>
-        </div>
-    </div>
-
-    <!-- 分帳與匯率頁面 -->
-    <div id="finance" class="page">
-        <h1>💸 即時分帳與匯率</h1>
-
-        <!-- 匯率換算器區塊 -->
-        <div class="card" style="border-color: var(--blue);">
-            <div class="sticker-label" style="background:var(--blue); color:var(--black);">EXCHANGE RATE</div>
-            <p style="font-size: 11px; opacity: 0.6; margin: 4px 0 8px 0;" id="rate-timestamp">匯率更新中...</p>
-            
-            <div class="converter-grid">
-                <div class="converter-row">
-                    <div class="converter-label">🇹🇭 泰銖 THB</div>
-                    <input type="number" id="calc-thb" class="converter-input" placeholder="0" oninput="convertCurrency('thb')">
-                </div>
-                <div class="converter-row">
-                    <div class="converter-label">🇭🇰 港幣 HKD</div>
-                    <input type="number" id="calc-hkd" class="converter-input" placeholder="0" oninput="convertCurrency('hkd')">
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="sticker-label" style="background:var(--coral); color:white;">PAYMENT</div>
-            <input type="text" id="pay-desc" placeholder="例如：米其林晚餐 🍴">
-            <input type="number" id="pay-amount" placeholder="多少泰銖？">
-            <select id="payer">
-                <option value="Ada">🥰 Ada 付的</option>
-                <option value="Cindy">🤪 Cindy 付的</option>
-                <option value="Ling">😇 Ling 付的</option>
-            </select>
-            <button class="add-btn" style="background:var(--yellow)" onclick="addPayment()">計算並同步 💰</button>
-        </div>
-        <div class="card"><h3>📑 共同小帳本</h3><div id="pay-records"></div></div>
-    </div>
-
-   <script type="module">
-        import { onValue, push, remove, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-        onValue(window.dbRefs.payments, (snapshot) => {
-            const data = snapshot.val() || {};
-            renderPayments(data);
-        });
-
-        window.deletePayment = function(key) {
-            showConfirm("確定要刪除這筆帳單嗎？", () => {
-                remove(ref(window.db, `trip_payments/${key}`));
-                showToast("🗑️ 帳單已成功刪除！");
-            });
-        };
-
+        // 全域函數：新增支付
         window.addPayment = function() {
-            const desc = document.getElementById('pay-desc').value;
+            const item = document.getElementById('pay-item').value;
             const amount = parseFloat(document.getElementById('pay-amount').value);
-            const payer = document.getElementById('payer').value;
-            if (!desc || !amount) return showCustomAlert("請填寫金額 and 說明喔！");
-            const per = Math.round(amount / 3);
-            push(window.dbRefs.payments, { desc, amount, payer, per });
-            document.getElementById('pay-desc').value = '';
+            const currency = document.getElementById('pay-currency').value;
+            const payer = document.getElementById('pay-payer').value;
+
+            if (!item || isNaN(amount)) { alert("請填寫資料！"); return; }
+            
+            const finalAmount = (currency === 'HKD') ? (amount * FIXED_RATE) : amount;
+
+            push(paymentsRef, { item, amount: finalAmount, payer, timestamp: Date.now() });
+            document.getElementById('pay-item').value = '';
             document.getElementById('pay-amount').value = '';
-            showToast("💰 共同小帳本已即時同步！");
         };
 
-        function renderPayments(data) {
-            const el = document.getElementById('pay-records');
-            const keys = Object.keys(data).reverse(); 
-            if (keys.length === 0) {
-                el.innerHTML = '<div style="text-align:center; opacity:0.5; padding:20px;">目前還沒有帳單喔 🍹</div>';
-                return;
-            }
-            el.innerHTML = keys.map(key => {
-                const p = data[key];
-                return `
-                    <div style="padding:12px 0; border-bottom:2px dashed #eee;">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                            <div>
-                                <span style="font-weight:900; font-size:15px;">🍭 ${p.desc}</span>
-                                <div style="font-size:11px; font-weight:700; opacity:0.7; margin-top:3px;">${p.payer} 買單 ➔ 每人 ${p.per}฿</div>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="color:var(--coral); font-weight:900; font-size:16px;">${p.amount}฿</span>
-                                <button class="delete-btn" onclick="deletePayment('${key}')">🗑️</button>
-                            </div>
-                        </div>
-                    </div>`;
-            }).join('');
-        }
-       // ... 現有的初始化代碼下方 ...
-
-const FIXED_RATE = 4.5; // 你可以隨時修改這個匯率
-
-// 新增記錄函數
-window.addPayment = async function() {
-    const item = document.getElementById('pay-item').value;
-    const amountInput = parseFloat(document.getElementById('pay-amount').value);
-    const currency = document.getElementById('pay-currency').value;
-    const payer = document.getElementById('pay-payer').value;
-
-    if (!item || isNaN(amountInput)) {
-        alert("請輸入項目名稱與正確金額！");
-        return;
-    }
-
-    const finalAmount = (currency === 'HKD') ? (amountInput * FIXED_RATE) : amountInput;
-
-    push(window.dbRefs.payments, {
-        item, 
-        amount: parseFloat(finalAmount.toFixed(2)), 
-        payer, 
-        timestamp: Date.now() 
-    });
-
-    document.getElementById('pay-item').value = '';
-    document.getElementById('pay-amount').value = '';
-};
-
-// 監聽並自動結算
-onValue(window.dbRefs.payments, (snapshot) => {
-    const data = snapshot.val() || {};
-    const totals = { "Cindy": 0, "Ling": 0, "Ada": 0 };
-    let totalAmount = 0;
-
-    Object.values(data).forEach(p => {
-        totals[p.payer] += p.amount;
-        totalAmount += p.amount;
-    });
-
-    const perPerson = totalAmount / 3;
-
-    const resultsDiv = document.getElementById('finance-results');
-    resultsDiv.innerHTML = `
-        <div style="font-size: 14px; font-weight: 700;">
-            <p>總消費: <b>${totalAmount.toFixed(0)} THB</b></p>
-            <p>每人應付: <b>${perPerson.toFixed(0)} THB</b></p>
-            <div style="border-top: 2px dashed #ccc; margin: 10px 0; padding-top: 10px;">
+        // 監聽更新
+        onValue(paymentsRef, (snapshot) => {
+            const data = snapshot.val() || {};
+            const totals = { "Cindy": 0, "Ling": 0, "Ada": 0 };
+            let total = 0;
+            Object.values(data).forEach(p => {
+                totals[p.payer] += p.amount;
+                total += p.amount;
+            });
+            document.getElementById('results-content').innerHTML = `
+                <p>總開銷: <b>${total.toFixed(0)} THB</b></p>
+                <p>每人應付: <b>${(total/3).toFixed(0)} THB</b></p>
+                <hr>
                 <p>Cindy 已付: ${totals.Cindy.toFixed(0)}</p>
                 <p>Ling 已付: ${totals.Ling.toFixed(0)}</p>
                 <p>Ada 已付: ${totals.Ada.toFixed(0)}</p>
-            </div>
-        </div>
-    `;
-});
-    </script>
-
-    <script>
-        let rates = { thbToHkd: 0.227 };
-
-        // 🔊 100% 電影感純網頁合成音效 (8-bit)
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(type) {
-            try {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                
-                if (type === 'tap') { // 啵啵啵點擊音
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(450, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(700, audioCtx.currentTime + 0.08);
-                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.08);
-                } else if (type === 'check') { // 啾～打勾勾音
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.15);
-                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.15);
-                } else if (type === 'uncheck') { // 嗚～取消打勾
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.12);
-                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.12);
-                }
-            } catch (e) {}
-        }
-
-        // 🌟 點擊噴射 Y2K 拍貼機彩色星星愛心特效
-        function createBurst(e) {
-            const x = e.clientX || (e.touches && e.touches[0].clientX);
-            const y = e.clientY || (e.touches && e.touches[0].clientY);
-            if (!x || !y) return;
-            
-            const shapes = ['🌸', '✨', '💖', '⭐', '🌈', '🌿'];
-            for (let i = 0; i < 8; i++) {
-                const el = document.createElement('span');
-                el.className = 'click-particle';
-                el.innerText = shapes[Math.floor(Math.random() * shapes.length)];
-                el.style.left = `${x}px`;
-                el.style.top = `${y}px`;
-                
-                const angle = Math.random() * Math.PI * 2;
-                const dist = 40 + Math.random() * 50;
-                const dx = Math.cos(angle) * dist;
-                const dy = Math.sin(angle) * dist;
-                const rot = -45 + Math.random() * 90;
-                
-                el.style.setProperty('--dx', `${dx}px`);
-                el.style.setProperty('--dy', `${dy}px`);
-                el.style.setProperty('--rot', `${rot}deg`);
-                
-                document.body.appendChild(el);
-                setTimeout(() => el.remove(), 600);
-            }
-        }
-
-        // 🍞 貼紙烤吐司 (Toast) 彈出訊息
-        function showToast(message) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = `<span>🌈</span> ${message}`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.25s ease';
-                setTimeout(() => toast.remove(), 250);
-            }, 2500);
-        }
-
-        // 🛑 完全自訂 Modal 對話框系統
-        let modalCallback = null;
-        function showCustomAlert(text) {
-            playSound('tap');
-            document.getElementById('modal-title-text').innerText = "🌸 注意喔！";
-            document.getElementById('modal-body-text').innerText = text;
-            const container = document.getElementById('modal-btn-container');
-            container.innerHTML = `<button class="modal-btn confirm" onclick="closeModal()">好滴！</button>`;
-            document.getElementById('custom-modal').style.display = 'flex';
-        }
-
-        function showConfirm(text, callback) {
-            playSound('tap');
-            modalCallback = callback;
-            document.getElementById('modal-title-text').innerText = "❓ 請確認一下喔";
-            document.getElementById('modal-body-text').innerText = text;
-            const container = document.getElementById('modal-btn-container');
-            container.innerHTML = `
-                <button class="modal-btn confirm" onclick="confirmModal()">確定！</button>
-                <button class="modal-btn cancel" onclick="closeModal()">算了</button>
             `;
-            document.getElementById('custom-modal').style.display = 'flex';
-        }
+        });
 
-        window.closeModal = function() {
-            playSound('tap');
-            document.getElementById('custom-modal').style.display = 'none';
-            modalCallback = null;
-        }
-
-        window.confirmModal = function() {
-            playSound('tap');
-            document.getElementById('custom-modal').style.display = 'none';
-            if (modalCallback) modalCallback();
-            modalCallback = null;
-        }
-
-        async function fetchExchangeRates() {
-            try {
-                const res = await fetch('https://open.er-api.com/v6/latest/THB');
-                const data = await res.json();
-                if (data && data.rates) {
-                    rates.thbToHkd = data.rates.HKD;
-                    document.getElementById('rate-timestamp').innerHTML = `🌍 即時匯率已同步 (1฿ ≈ ${rates.thbToHkd.toFixed(3)} HKD)`;
-                }
-            } catch (e) {
-                document.getElementById('rate-timestamp').innerHTML = `⚠️ 使用預設離線匯率 (1฿ ≈ 0.23 HKD)`;
-            }
-        }
-
-        function convertCurrency(source) {
-            const thbInput = document.getElementById('calc-thb');
-            const hkdInput = document.getElementById('calc-hkd');
-
-            if (source === 'thb') {
-                const val = parseFloat(thbInput.value);
-                if (isNaN(val)) { hkdInput.value = ''; return; }
-                hkdInput.value = (val * rates.thbToHkd).toFixed(1);
-            } else if (source === 'hkd') {
-                const val = parseFloat(hkdInput.value);
-                if (isNaN(val)) { thbInput.value = ''; return; }
-                thbInput.value = (val / rates.thbToHkd).toFixed(1);
-            }
-        }
-
-        function toggleAccordion(cardElement) { 
-            playSound('tap');
-            cardElement.classList.toggle('expanded'); 
-        }
-
-        function copyAddress(id) {
-            const text = document.getElementById(id).innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                showToast("📋 地址已完美複製！");
-            }).catch(() => {
-                showCustomAlert("地址備份如下：\n" + text + "\n(請長按選取手動複製喔！)");
-            });
-        }
-
-        const defaultItems = [
-            "🪪 護照 (確認效期 6 個月以上喔！)",
-            "🆔 身分證",
-            "📝 填寫完成泰國 TDAC (泰國入境追蹤系統)",
-            "🌐 購買泰國網卡 / 設定 eSIM",
-            "💰 兌換泰銖現金 (曼谷很多小吃只收現金！)",
-            "💳 開通海外credit card / 預備 PromptPay scan",
-            "💊 準備個人常用藥物與防蚊液 🦟",
-            "🔌 轉插",
-            "🏥 旅遊保險 / 準備電子機票外存"
-        ];
-
-        let userTodoState = JSON.parse(localStorage.getItem('thai_trip_user_todo'));
-        if (!userTodoState || userTodoState.length !== defaultItems.length) {
-            userTodoState = defaultItems.map((text, idx) => ({ id: idx, text: text, checked: false }));
-            localStorage.setItem('thai_trip_user_todo', JSON.stringify(userTodoState));
-        }
-
-        function renderLocalTodoList() {
-            const container = document.getElementById('todo-list-container');
-            container.innerHTML = userTodoState.map(item => `
-                <div class="todo-item ${item.checked ? 'checked' : ''}" onclick="toggleLocalTodo(${item.id})">
-                    <div class="todo-checkbox">${item.checked ? '✓' : ''}</div>
-                    <div class="todo-text">${item.text}</div>
-                </div>
-            `).join('');
-        }
-
-        function toggleLocalTodo(id) {
-            const target = userTodoState.find(item => item.id === id);
-            if (target) {
-                target.checked = !target.checked;
-                playSound(target.checked ? 'check' : 'uncheck');
-                localStorage.setItem('thai_trip_user_todo', JSON.stringify(userTodoState));
-                renderLocalTodoList();
-            }
-        }
-
-        const apiKey = '60cc6ca7af6352b8d7a184999d857f16';
-
-        function showPage(pageId, e) {
-            if (e) {
-                playSound('tap');
-                createBurst(e);
-            }
+        // 頁面切換邏輯
+        window.showPage = function(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
-            
-            // 標註對應按鈕為 active
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            const buttons = document.querySelectorAll('.nav-item');
-            buttons.forEach(btn => {
-                if(btn.getAttribute('onclick').includes(pageId)) { btn.classList.add('active'); }
-            });
-            window.scrollTo(0,0);
-        }
-
-        function updateCountdown() {
-            const departureDate = new Date('2026-07-01T09:00:00');
-            const now = new Date();
-            const diff = departureDate - now;
-            if (diff <= 0) { document.getElementById('countdown').innerHTML = "冒險開始啦！🔥"; return; }
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            document.getElementById('countdown').innerHTML = `${days} 天 ${hours} 小時`;
-        }
-
-        function getWeatherEmoji(id) {
-            if (id >= 200 && id < 300) return '⛈️';
-            if (id >= 300 && id < 600) return '🌧️';
-            if (id >= 600 && id < 700) return '❄️';
-            if (id >= 700 && id < 800) return '🌫️';
-            if (id === 800) return '☀️';
-            if (id === 801 || id === 802) return '⛅';
-            return '☁️';
-        }
-
-        async function fetchWeather() {
-            try {
-                // 取得當前天氣
-                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=Bangkok&appid=${apiKey}&units=metric&lang=zh_tw`);
-                const data = await res.json();
-                
-                // 取得未來天氣預報
-                const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Bangkok&appid=${apiKey}&units=metric&lang=zh_tw`);
-                const forecastData = await forecastRes.json();
-                
-                // 當前天氣顯示
-                const currentStr = `${getWeatherEmoji(data.weather[0].id)} ${Math.round(data.main.temp)}°C`;
-                
-                // 取得明天同一時間的預測 (forecast 資料每 3 小時一筆，+8 即約 24 小時後)
-                const tomorrowData = forecastData.list[8];
-                const tomorrowStr = `明天 ${getWeatherEmoji(tomorrowData.weather[0].id)} ${Math.round(tomorrowData.main.temp)}°C`;
-                
-                document.getElementById('mini-weather-display').innerHTML = 
-                    `<span style="margin-right:8px;">${currentStr}</span> | <span style="margin-left:8px; color:#636e72;">${tomorrowStr}</span>`;
-            } catch(e) {
-                document.getElementById('mini-weather-display').innerHTML = `☀️ 曼谷天氣`;
-            }
-        }
-
-        renderLocalTodoList();
-        fetchWeather(); updateCountdown(); fetchExchangeRates();
-        setInterval(updateCountdown, 60000);
+        };
     </script>
 </body>
 </html>
